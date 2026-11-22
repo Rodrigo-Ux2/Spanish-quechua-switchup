@@ -59,3 +59,8 @@ def test_mapear_grupos_ignora_y_un_solo_grupo():
     g = np.array([5, 5, 5, 5])
     r = np.array([ES, ES, IGNORAR, QU])
     assert set(mapear_grupos(g, r)) == {5}
+
+
+def test_contar_cambios_borde_exacto():
+    # abs(1.1 - 0.9) = 0.20000000000000007: debe contar como dentro de 200 ms.
+    assert contar_cambios([1.1], [0.9]) == (1, 0, 0)

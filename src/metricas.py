@@ -30,7 +30,7 @@ def metricas_trama(ref, pred):
 def contar_cambios(ref, pred, tolerancia=0.2):
     """(vp, fp, fn) con emparejamiento uno a uno, de menor a mayor distancia."""
     pares = sorted((abs(a - b), i, j) for i, a in enumerate(ref)
-                   for j, b in enumerate(pred) if abs(a - b) <= tolerancia)
+                   for j, b in enumerate(pred) if abs(a - b) <= tolerancia + 1e-9)
     usados_r, usados_p, vp = set(), set(), 0
     for _, i, j in pares:
         if i not in usados_r and j not in usados_p:

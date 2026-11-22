@@ -293,15 +293,16 @@ def main() -> None:
         entrenamiento = _leer_json(RESULTADOS / 'entrenamiento_profundo.json',
                                    'Entrenar modelo profundo')
         res_ns = _leer_json(RESULTADOS / 'no_supervisado.json', 'Entrenar modelo no supervisado')
+        if '2' not in res_ns.get('silueta_por_k', {}):
+            raise ErrorModelo('Los resultados del modelo no supervisado están incompletos. '
+                              'Corre el paso "Entrenar modelo no supervisado".')
         silueta_k2 = res_ns['silueta_por_k']['2']
         predictores = {
             'profundo': lambda y: suavizar(predecir_profundo(profundo, y)),
             'no_supervisado': lambda y: suavizar(predecir_no_supervisado(ns, y)),
             'linea_base': _linea_base(SINTETICO / 'entrenamiento')}
-    except (ErrorModelo, KeyError) as e:
-        print(e.args[0] if isinstance(e, ErrorModelo) else
-              'Los resultados del modelo no supervisado están incompletos. '
-              'Corre el paso "Entrenar modelo no supervisado".', file=sys.stderr)
+    except ErrorModelo as e:
+        print(e.args[0], file=sys.stderr)
         sys.exit(1)
     _paso('Evaluando la partición de prueba...')
     metricas = {'prueba': evaluar_particion(prueba, predictores)}

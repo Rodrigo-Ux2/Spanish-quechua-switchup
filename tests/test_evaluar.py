@@ -127,3 +127,21 @@ def test_main_json_ausente(tmp_path, monkeypatch, capsys, faltante, paso):
     assert e.value.code == 1
     err = capsys.readouterr().err
     assert paso in err and 'Errno' not in err
+
+
+def test_main_silueta_ausente(tmp_path, monkeypatch, capsys):
+    (tmp_path / 'sintetico' / 'prueba').mkdir(parents=True)
+    (tmp_path / 'sintetico' / 'prueba' / 'meta.jsonl').write_text('')
+    (tmp_path / 'resultados').mkdir()
+    for n in ('entrenamiento_profundo.json', 'no_supervisado.json'):
+        (tmp_path / 'resultados' / n).write_text('{}')
+    monkeypatch.setattr(evaluar, 'SINTETICO', tmp_path / 'sintetico')
+    monkeypatch.setattr(evaluar, 'RESULTADOS', tmp_path / 'resultados')
+    monkeypatch.setattr(evaluar, 'cargar_profundo', lambda ruta: None)
+    monkeypatch.setattr(evaluar, 'cargar_no_supervisado', lambda ruta: None)
+    with pytest.raises(SystemExit) as e:
+        evaluar.main()
+    assert e.value.code == 1
+    err = capsys.readouterr().err
+    assert 'incompletos' in err and 'Entrenar modelo no supervisado' in err
+    assert 'Traceback' not in err

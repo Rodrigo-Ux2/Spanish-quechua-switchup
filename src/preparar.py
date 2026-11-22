@@ -111,22 +111,23 @@ def seleccionar(filas: list[dict], max_por_hablante: int, horas_max: float,
     return rng.sample(elegidas, tope) if len(elegidas) > tope else elegidas
 
 
-def _procesar(args: tuple) -> float | None:
-    """Decodifica, normaliza, recorta y escribe un wav. None si se descarta."""
+def _procesar(args: tuple) -> float | str:
+    """Decodifica, normaliza, recorta y escribe un wav. Devuelve la duración o el motivo del descarte."""
     origen, destino = args
     try:
         y = recortar_silencios(normalizar_volumen(cargar_audio(origen)))
     except ErrorAudio:
-        return None
+        return 'ilegible'
     if len(y) < SR:
-        return None
+        return 'corto'
     Path(destino).parent.mkdir(parents=True, exist_ok=True)
     sf.write(destino, y, SR, subtype='PCM_16')
     return len(y) / SR
 
 
-def _extraer(ruta_tar: Path, pedidos: dict[str, dict], carpeta: Path) -> list[tuple]:
-    """Segunda pasada en streaming: extrae solo los clips pedidos a `carpeta`."""
+def _extraer(ruta_tar: Path, pedidos: dict[str, dict], carpeta: Path) -> tuple[list[tuple], set[str]]:
+    """Segunda pasada en streaming: extrae solo los clips pedidos a `carpeta`.
+    Devuelve también los pedidos que no estaban en el tar."""
     hechos = []
     pendientes = set(pedidos)
     with tarfile.open(ruta_tar, mode='r|*') as tar:
@@ -142,7 +143,7 @@ def _extraer(ruta_tar: Path, pedidos: dict[str, dict], carpeta: Path) -> list[tu
             tmp = carpeta / f'{len(hechos)}{Path(archivo).suffix}'
             tmp.write_bytes(tar.extractfile(m).read())
             hechos.append((tmp, pedidos[archivo]))
-    return hechos
+    return hechos, pendientes
 
 
 def preparar(rutas_tar: list[Path], horas_max: float = 12.0,
@@ -162,6 +163,7 @@ def preparar(rutas_tar: list[Path], horas_max: float = 12.0,
         particion = dividir_hablantes([f['hablante'] for f in filas])
         elegidas = seleccionar(filas, max_por_hablante, horas_max, 4.0)
         contador = 0
+        descartes = {'ilegible': 0, 'corto': 0, 'faltante': 0}
         for ruta in dict.fromkeys(f['tar'] for f in elegidas):
             pedidos = {}
             for f in (f for f in elegidas if f['tar'] == ruta):
@@ -169,7 +171,11 @@ def preparar(rutas_tar: list[Path], horas_max: float = 12.0,
                 pedidos[f['archivo']] = meta
                 contador += 1
             with tempfile.TemporaryDirectory() as tmp:
-                trabajos = _extraer(ruta, pedidos, Path(tmp))
+                trabajos, faltantes = _extraer(ruta, pedidos, Path(tmp))
+                descartes['faltante'] += len(faltantes)
+                if faltantes:
+                    print(f'Aviso: {len(faltantes)} clips listados en el .tsv no están en '
+                          f'{Path(ruta).name} (¿archivo truncado?).', file=sys.stderr)
                 args = []
                 for origen, meta in trabajos:
                     rel = Path(idioma) / meta['particion'] / f"{meta['hablante'][:8]}_{meta['n']}.wav"
@@ -177,12 +183,16 @@ def preparar(rutas_tar: list[Path], horas_max: float = 12.0,
                 with Pool() as pool:
                     duraciones = pool.map(_procesar, args, chunksize=16)
             for (_, meta), (_, destino), dur in zip(trabajos, args, duraciones):
-                if dur is None:
+                if isinstance(dur, str):
+                    descartes[dur] += 1
                     continue
                 filas_indice.append({
                     'ruta': str(Path(destino).relative_to(CLIPS)), 'idioma': idioma,
                     'hablante': meta['hablante'], 'genero': meta['genero'],
                     'particion': meta['particion'], 'duracion': round(dur, 3)})
+        print(f'Descartados ({NOMBRE_IDIOMA[idioma]}): {descartes["ilegible"]} ilegibles, '
+              f'{descartes["corto"]} de menos de 1 s, {descartes["faltante"]} ausentes del tar.',
+              file=sys.stderr)
     return filas_indice
 
 

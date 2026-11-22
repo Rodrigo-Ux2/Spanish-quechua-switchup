@@ -111,3 +111,22 @@ def test_falta_idioma(tmp_path, monkeypatch, tar_falso, capsys):
     with pytest.raises(SystemExit) as e:
         preparar_main()
     assert e.value.code == 1 and 'Falta el audio de Quechua' in capsys.readouterr().err
+
+
+def test_preparar_informa_descartes(tmp_path, tono, monkeypatch, capsys):
+    monkeypatch.setattr('preparar.CLIPS', tmp_path / 'clips')
+    filas = ''.join(f'h{i}\t{n}.wav\tf\tmale_masculine\n' for i, n in
+                    enumerate(['bueno', 'corrupto', 'corto', 'ausente']))
+    corto = io.BytesIO()
+    sf.write(corto, tono(0.5), 16000, format='WAV')
+    ruta = tmp_path / 'es.tar.gz'
+    with tarfile.open(ruta, 'w:gz') as t:
+        _agregar(t, 'cv-corpus-26.0/es/validated.tsv', (CABECERA + filas).encode())
+        _agregar(t, 'cv-corpus-26.0/es/clips/bueno.wav', _wav(tono))
+        _agregar(t, 'cv-corpus-26.0/es/clips/corrupto.wav', b'no es audio')
+        _agregar(t, 'cv-corpus-26.0/es/clips/corto.wav', corto.getvalue())
+    out = preparar([ruta])
+    err = capsys.readouterr().err
+    assert len(out) == 1
+    assert 'no están en' in err
+    assert '1 ilegibles, 1 de menos de 1 s, 1 ausentes' in err

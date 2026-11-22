@@ -1,8 +1,8 @@
 # Resultados de la corrida de referencia
 
-Registro de los datos y resultados medidos en la corrida completa del pipeline (evaluación generada el 2026-11-22). Todas las cifras salen de los archivos de `resultados/` y de `datos/sintetico/`; este documento es la fuente para los informes.
+Registro de los datos y resultados medidos en la corrida completa del pipeline (evaluación generada el 2026-11-22). Lo genera `src/registro.py` a partir de los archivos de `resultados/` y de `datos/sintetico/`; este documento es la fuente para los informes. Las cifras que ningún script guarda se indican como «medido en la corrida de referencia del 2026-11-22».
 
-Equipo: Intel Core Ultra 7 265U, 14 núcleos, solo CPU (PyTorch CPU). Semilla 2026.
+Equipo (medido en la corrida de referencia del 2026-11-22): Intel Core Ultra 7 265U, 14 núcleos, solo CPU (PyTorch CPU). Semilla 2026.
 
 ## 1. Datos de origen (Common Voice, CC0)
 
@@ -17,9 +17,9 @@ Quechua de Puno (qxp) y español de México (segmentos masculino y femenino). Pa
 | Quechua | validacion | 1206 | 1.14 | 8 |
 | Quechua | prueba | 1266 | 1.19 | 8 |
 
-Total: 19219 clips. Descartados por durar menos de 1 s: 36 de español y 6 de quechua. Los tar de español no traen `validated.tsv`; se usó la unión de train, dev y test (ruling R1).
+Total: 19219 clips. Descartados por durar menos de 1 s (medido en la corrida de referencia del 2026-11-22): 36 de español y 6 de quechua. Los tar de español no traen `validated.tsv`; se usó la unión de train, dev y test (ruling R1).
 
-Observaciones: el quechua tiene menos horas de entrenamiento que el español y solo 8 hablantes en validación y 8 en prueba, por lo que las métricas de prueba dependen de pocas voces.
+Observaciones: el quechua tiene 6.16 h de entrenamiento frente a 9.76 h del español, y solo 8 hablantes en validación y 8 en prueba, por lo que las métricas de prueba dependen de pocas voces.
 
 ## 2. Corpus sintético
 
@@ -29,7 +29,7 @@ Observaciones: el quechua tiene menos horas de entrenamiento que el español y s
 | validacion | 450 | 270 | 90 | 90 | 0.98 | 46.3 % | 40.3 % | 13.4 % |
 | prueba | 450 | 270 | 90 | 90 | 0.97 | 44.0 % | 45.2 % | 10.8 % |
 
-Las tramas ignoradas (pausas y no-habla) no cuentan en la pérdida ni en las métricas. Chequeo de uniones (R4): razón de energía en la unión, mediana 0.06, p95 0.21, máximo 4.22 (un único atípico). Muestras recortadas por saturación: 0.06 %. La escucha manual de 5 frases mixtas y 5 de control queda pendiente.
+Las tramas ignoradas (pausas y no-habla) no cuentan en la pérdida ni en las métricas. Chequeo de uniones (R4, medido en la corrida de referencia del 2026-11-22): razón de energía en la unión, mediana 0.06, p95 0.21, máximo 4.22 (un único atípico). Muestras recortadas por saturación (medido en la corrida de referencia del 2026-11-22): 0.06 %. La escucha manual de 5 frases mixtas y 5 de control queda pendiente.
 
 ## 3. Modelo profundo (CRNN)
 
@@ -65,6 +65,8 @@ El plan presupuestaba menos de 3 min por época y menos de 60 min en total; en e
 
 Ventanas de 500 ms con MFCC, normalización por frase (CMN), estandarización y PCA. Algoritmo elegido: kmeans.
 
+Silueta de k-means para cada k, medida en una submuestra de 10 000 ventanas de entrenamiento:
+
 | k | Silueta |
 |---:|---:|
 | 2 | 0.0849 |
@@ -73,22 +75,24 @@ Ventanas de 500 ms con MFCC, normalización por frase (CMN), estandarización y 
 | 5 | 0.0395 |
 | 6 | 0.0270 |
 
-| Algoritmo | Exactitud val. | F1 macro val. | ARI con idioma | ARI con género | ARI con hablante |
+Todas las columnas de esta tabla son de la partición de validación:
+
+| Algoritmo | Exactitud val. | F1 macro val. | ARI con idioma val. | ARI con género val. | ARI con hablante val. |
 |---|---:|---:|---:|---:|---:|
 | kmeans | 0.516 | 0.515 | 0.0005 | -0.0001 | 0.0102 |
 | gmm | 0.498 | 0.496 | -0.0001 | -0.0001 | 0.0051 |
 
-En prueba, por ventana: ARI 0.0035, NMI 0.0024, pureza 0.530, silueta 0.0849 (12758 ventanas). Los grupos no se alinean con el idioma: el resultado es prácticamente azar.
+En prueba, por ventana (12758 ventanas): ARI 0.0035, NMI 0.0024, pureza 0.530. La silueta con k = 2 (0.0849) es la de la submuestra de entrenamiento. En esta corrida los grupos no se alinean con el idioma: el resultado es prácticamente azar.
 
 ## 5. Evaluación en la partición de prueba
 
 Línea base: predecir siempre la clase mayoritaria del entrenamiento (español). Cambios evaluados con tolerancia de ±200 ms.
 
-| Modelo | Exactitud | F1 macro | F1 ES | F1 QU | Precisión cambios | Exhaustividad cambios | F1 cambios | Falsos cambios en control |
-|---|---:|---:|---:|---:|---:|---:|---:|---:|
-| Profundo (CRNN) | 0.865 | 0.865 | 0.872 | 0.857 | 0.571 | 0.605 | 0.587 | 44.4 % |
-| No supervisado | 0.531 | 0.523 | 0.461 | 0.585 | 0.115 | 0.368 | 0.175 | 90.0 % |
-| Línea base | 0.494 | 0.330 | 0.661 | 0.000 | 1.000 | 0.000 | 0.000 | 0.0 % |
+| Modelo | Exactitud | F1 macro | F1 ES | F1 QU | Precisión cambios | Exhaustividad cambios | F1 cambios | Falsos cambios en control | Falsos cambios en monolingües |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+| Profundo (CRNN) | 0.865 | 0.865 | 0.872 | 0.857 | 0.571 | 0.605 | 0.587 | 44.4 % | 22.2 % |
+| No supervisado | 0.531 | 0.523 | 0.461 | 0.585 | 0.115 | 0.368 | 0.175 | 90.0 % | 86.7 % |
+| Línea base | 0.494 | 0.330 | 0.661 | 0.000 | 1.000 | 0.000 | 0.000 | 0.0 % | 0.0 % |
 
 Tramas evaluadas: 312185.
 
@@ -126,10 +130,16 @@ Grabaciones reales: no hubo en esta corrida (`reales` vacío).
 | no_supervisado | 82.2 | 1.4 |
 | evaluar | 62.6 | 1.0 |
 
-Síntesis: pico de memoria 3.7 GB, 2.1 GB en disco. Entrenamiento profundo: pico de memoria 2.2 GB.
+Picos de memoria (medido en la corrida de referencia del 2026-11-22): síntesis 3.7 GB, con 2.1 GB en disco; entrenamiento profundo 2.2 GB.
 
 ## 7. Figuras
 
+- `resultados/figuras/app_datos.png`
+- `resultados/figuras/app_entrenar.png`
+- `resultados/figuras/app_probar.png`
+- `resultados/figuras/app_probar_error.png`
+- `resultados/figuras/app_probar_mp3.png`
+- `resultados/figuras/app_resultados.png`
 - `resultados/figuras/curvas_entrenamiento.png`
 - `resultados/figuras/ejemplos_lineas_tiempo.png`
 - `resultados/figuras/matriz_no_supervisado.png`
@@ -138,9 +148,9 @@ Síntesis: pico de memoria 3.7 GB, 2.1 GB en disco. Entrenamiento profundo: pico
 
 ## 8. Lectura de los resultados
 
-- El modelo profundo supera con margen a la línea base (0.865 frente a 0.330 de F1 macro) y al no supervisado (0.523).
-- Hay una brecha entre validación (0.944) y prueba (0.865); la prueba tiene otros hablantes y solo 8 de quechua.
+- El modelo profundo obtiene 0.865 de F1 macro, frente a 0.330 de la línea base y 0.523 del no supervisado.
+- Hay una brecha entre validación (0.944) y prueba (0.865): la prueba tiene otros hablantes (solo 8 de quechua) y la época se eligió por su F1 de validación (parada temprana), lo que favorece a esa partición.
 - El error dominante es QU→ES (31782 tramas frente a 10304 de ES→QU): el modelo tiende a llamar español al quechua.
-- Las frases mixtas son las más difíciles (0.834); localizar el cambio es más difícil que clasificar el idioma (F1 de cambios 0.587).
-- El 44 % de las frases de control (un solo idioma, varios hablantes) recibe al menos un cambio falso: el modelo reacciona en parte al cambio de hablante.
-- El agrupamiento sin etiquetas no encuentra la separación por idioma (ARI cercano a 0): las MFCC por ventana no bastan sin supervisión.
+- Las frases mixtas son las más difíciles (0.834 de F1 macro); localizar el cambio es más difícil que clasificar el idioma (F1 de cambios 0.587).
+- El 44.4 % de las frases de control (un idioma, un hablante distinto en cada tramo) recibe al menos un cambio falso, frente al 22.2 % de las monolingües (un idioma, un solo hablante, las mismas uniones): la diferencia, 22.2 puntos, es la parte atribuible al cambio de hablante.
+- El agrupamiento sin etiquetas no encuentra la separación por idioma (ARI 0.0035 en las ventanas de prueba): las MFCC por ventana no bastan sin supervisión.

@@ -69,3 +69,26 @@ Consecuencias de la decisión:
 - Pendiente. El paso 3 de la tarea 8, la escucha manual de 5 frases mixtas y 5 de control, no se hizo. Queda a
   cargo del autor humano. El chequeo numérico R4 la sustituye de forma provisional y no equivale a escuchar el
   audio.
+
+## Adenda (2026-11-22): procedencia de cifras, particiones y tamaño del modelo
+
+- Cifras fijas de la corrida de referencia. Los clips descartados por cortos (36 de español y 6 de quechua),
+  el chequeo de uniones R4 (mediana 0.06, p95 0.21, máximo 4.22), el recorte por saturación (0.06 %), los
+  picos de memoria (3.7 GB en la síntesis, con 2.1 GB en disco, y 2.2 GB en el entrenamiento profundo) y el
+  equipo se midieron una sola vez en la corrida de referencia del 2026-11-22. Ningún script los guarda ni los
+  regenera: `src/registro.py` los escribe tal cual en `docs/resultados.md`, marcados como medidos en esa
+  corrida, y el informe los presenta igual. El resto de las cifras sale de `resultados/` y se recalcula.
+- Partición de cada cifra del no supervisado. Los ARI citados en las consecuencias (0.0005 con el idioma y
+  0.0102 con el hablante) son de la partición de validación (`resultados/no_supervisado.json`). En las
+  ventanas de la prueba el ARI con el idioma es 0.0035 (`no_supervisado_ventanas` en
+  `resultados/metricas.json`). La silueta con k = 2 (0.0849) se mide en una submuestra de 10 000 ventanas de
+  entrenamiento, no en la prueba.
+- Falsos cambios en frases monolingües. La evaluación mide ahora también las frases monolingües: tienen las
+  mismas uniones que las de control pero un solo hablante. El modelo profundo marca falsos cambios en el
+  22.2 % de ellas frente al 44.4 % de las de control; la diferencia es la parte atribuible al cambio de
+  hablante.
+- Tamaño de la CRNN. La especificación (§6.1) pedía un modelo «del orden de cientos de miles de parámetros».
+  La CRNN tiene 1 109 250: los hiperparámetros fijados en el plan (canales 32, 64 y 64 y una BiLSTM de dos
+  capas con 128 unidades) dan ese tamaño, y la BiLSTM aporta 1 052 672 de ellos. Se acepta la desviación
+  porque el modelo ya está entrenado y, igual que con las horas y los canales, reducirlo obliga a repetir
+  2.3 h de entrenamiento en CPU. Una BiLSTM de una capa o de 64 unidades lo dejaría dentro del rango previsto.

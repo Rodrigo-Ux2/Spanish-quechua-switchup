@@ -1,0 +1,971 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Code-switching español–quechua</title>
+<link rel="icon" href="data:,">  <!-- sin favicon: evita el 404 en la consola -->
+<style>
+:root {
+  color-scheme: light;
+  --tinta: #17201d;
+  --tinta-2: #4a5550;
+  --fondo: #f4f5f2;
+  --superficie: #ffffff;
+  --linea: #d6dad5;
+  --riel: #1d2723;
+  --riel-texto: #dce3df;
+  --riel-tenue: #9fada6;
+  --riel-activo: #2c3a35;
+  --es: #0072b2;
+  --qu: #e69f00;
+  --sin-habla: #e3e6e2;
+  --error: #9e2a1c;
+  --error-fondo: #fbeeeb;
+  --ok: #1f6b45;
+  --radio: 8px;
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  --texto: system-ui, -apple-system, "Segoe UI", Roboto, "Noto Sans", sans-serif;
+  --mono: ui-monospace, "SF Mono", "Cascadia Mono", "DejaVu Sans Mono", Menlo, monospace;
+}
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+  margin: 0; background: var(--fondo); color: var(--tinta);
+  font: 16px/1.5 var(--texto); caret-color: var(--tinta);
+  scrollbar-color: #b9c0bb transparent; accent-color: var(--tinta);
+}
+::selection { background: #cfe3f0; color: var(--tinta); }
+a { color: var(--tinta); text-underline-offset: 3px; text-decoration-thickness: 1px; }
+:focus-visible { outline: 2px solid var(--tinta); outline-offset: 2px; border-radius: 2px; }
+[hidden] { display: none !important; }
+.solo-lector { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+.saltar { position: absolute; left: 16px; top: -48px; background: var(--superficie); padding: 8px 12px; z-index: 10; border-radius: var(--radio); }
+.saltar:focus { top: 8px; }
+.icono { width: 20px; height: 20px; flex: none; fill: none; stroke: currentColor; stroke-width: 1.75; stroke-linecap: round; stroke-linejoin: round; }
+.num { font-variant-numeric: tabular-nums; }
+
+/* ---- Armazón: riel de navegación + contenido ---- */
+.app { min-height: 100vh; display: grid; grid-template-columns: 232px minmax(0, 1fr); }
+.riel { background: var(--riel); color: var(--riel-texto); padding: 0 16px; }
+.riel-dentro { position: sticky; top: 0; height: 100vh; padding: 24px 0; display: flex; flex-direction: column; gap: 32px; }
+.marca { margin: 0; font-size: 15px; line-height: 1.3; font-weight: 600; color: #fff; }
+.marca span { display: block; font-weight: 400; color: var(--riel-tenue); font-size: 13px; margin-top: 4px; }
+.marca .es, .marca .qu { display: inline; font-size: inherit; margin: 0; color: inherit; }
+.marca .par { font-weight: inherit; white-space: nowrap; }
+.marca .es { box-shadow: inset 0 -3px var(--es); }
+.marca .qu { box-shadow: inset 0 -3px var(--qu); }
+.nav { display: flex; flex-direction: column; gap: 4px; }
+.nav a { display: block; padding: 8px 12px; border-radius: var(--radio); color: var(--riel-texto); text-decoration: none; font-weight: 500; }
+.nav a:hover { background: var(--riel-activo); }
+.nav a[aria-current="page"] { background: var(--riel-activo); color: #fff; box-shadow: inset 2px 0 #fff; }
+.nav a:focus-visible { outline-color: #fff; }
+.estado-global { margin-top: auto; font-size: 13px; color: var(--riel-tenue); }
+.estado-global strong { display: block; color: var(--riel-texto); font-weight: 500; }
+
+main { padding: 48px 48px 96px; min-width: 0; }
+.vista { max-width: 1120px; }
+.cabecera { margin-bottom: 32px; }
+h1 { font-size: clamp(2rem, 4vw, 3rem); line-height: 1.05; letter-spacing: -0.025em; font-weight: 600; margin: 0 0 12px; text-wrap: balance; }
+h2 { font-size: 1.25rem; line-height: 1.3; letter-spacing: -0.01em; font-weight: 600; margin: 48px 0 16px; }
+h3 { font-size: 1rem; font-weight: 600; margin: 0 0 8px; }
+.bajada { margin: 0; max-width: 68ch; color: var(--tinta-2); }
+p { max-width: 70ch; }
+
+/* ---- Controles ---- */
+.boton {
+  display: inline-flex; align-items: center; gap: 8px; min-height: 40px; padding: 8px 16px;
+  border: 1px solid var(--tinta); border-radius: var(--radio); background: var(--superficie); color: var(--tinta);
+  font: inherit; font-weight: 550; cursor: pointer; text-decoration: none;
+  transition: transform 160ms var(--ease-out), background-color 150ms ease;
+}
+.boton:hover { background: #ebeee9; }
+.boton:active:not(:disabled) { transform: scale(0.97); }
+.boton.principal { background: var(--tinta); color: #fff; }
+.boton.principal:hover { background: #2c3833; }
+.boton:disabled { opacity: 0.45; cursor: not-allowed; }
+.boton.peligro { border-color: var(--error); color: var(--error); }
+.boton.chico { min-height: 32px; padding: 4px 12px; font-size: 14px; }
+.acciones { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; }
+.segmentos { display: inline-flex; border: 1px solid var(--linea); border-radius: var(--radio); padding: 4px; gap: 4px; background: var(--superficie); margin: 0; flex-wrap: wrap; width: fit-content; min-inline-size: 0; }
+.segmentos legend { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+.segmentos label { position: relative; }
+.segmentos input { position: absolute; opacity: 0; inset: 0; margin: 0; cursor: pointer; }
+.segmentos span { display: block; padding: 6px 16px; border-radius: calc(var(--radio) - 4px); font-weight: 500; color: var(--tinta-2); transition: background-color 150ms ease, color 150ms ease; }
+.segmentos input:checked + span { background: var(--tinta); color: #fff; }
+.segmentos input:focus-visible + span { outline: 2px solid var(--tinta); outline-offset: 2px; }
+
+.aviso { display: flex; gap: 12px; align-items: flex-start; padding: 12px 16px; border-radius: var(--radio); background: var(--superficie); border: 1px solid var(--linea); max-width: 80ch; }
+.aviso p { margin: 0; }
+.aviso.error { background: var(--error-fondo); border-color: #ecc5bd; color: var(--error); }
+.aviso.error strong { display: block; }
+.aviso + .aviso { margin-top: 8px; }
+.tenue { color: var(--tinta-2); }
+
+/* ---- Tablas ---- */
+.tabla-caja { overflow-x: auto; border: 1px solid var(--linea); border-radius: var(--radio); background: var(--superficie); }
+table { border-collapse: collapse; width: 100%; font-variant-numeric: tabular-nums; }
+caption { text-align: left; padding: 12px 16px 0; color: var(--tinta-2); font-size: 14px; caption-side: top; }
+th, td { padding: 12px 16px; text-align: right; border-bottom: 1px solid var(--linea); white-space: nowrap; }
+th:first-child, td:first-child { text-align: left; }
+thead th { font-size: 14px; font-weight: 600; color: var(--tinta-2); }
+tbody tr:last-child td, tbody tr:last-child th { border-bottom: 0; }
+tbody th { font-weight: 500; }
+td.mejor { font-weight: 600; }
+tr.total td, tr.total th { font-weight: 600; background: #f8f9f7; }
+
+/* ---- Probar ---- */
+.fuente { display: grid; gap: 16px; padding: 24px; background: var(--superficie); border: 1px solid var(--linea); border-radius: var(--radio); }
+.frases { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 8px; }
+.frases button { width: 100%; display: flex; justify-content: space-between; gap: 8px; padding: 8px 12px; border: 1px solid var(--linea); border-radius: var(--radio); background: var(--fondo); font: inherit; font-size: 14px; cursor: pointer; color: var(--tinta); transition: transform 160ms var(--ease-out), border-color 150ms ease; }
+.frases button:hover { border-color: var(--tinta-2); }
+.frases button:active { transform: scale(0.97); }
+.frases button[aria-pressed="true"] { border-color: var(--tinta); background: var(--superficie); box-shadow: inset 0 0 0 1px var(--tinta); }
+.frases .dur { color: var(--tinta-2); font-variant-numeric: tabular-nums; }
+.soltar { display: grid; place-items: center; gap: 8px; text-align: center; padding: 32px 16px; border: 1px dashed #aab2ad; border-radius: var(--radio); background: var(--fondo); transition: border-color 150ms ease, background-color 150ms ease; }
+.soltar.encima { border-color: var(--tinta); background: #eaece8; }
+.soltar p { margin: 0; }
+.grabador { display: flex; flex-wrap: wrap; align-items: center; gap: 16px; }
+.reloj-grab { font-family: var(--mono); font-variant-numeric: tabular-nums; font-size: 1.5rem; }
+
+.resultado { margin-top: 32px; display: grid; gap: 16px; }
+.resultado-cab { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: 8px 24px; }
+.resultado-cab h2 { margin: 0; }
+audio { width: 100%; height: 40px; }
+.leyenda { display: flex; flex-wrap: wrap; gap: 8px 20px; margin: 0; padding: 0; list-style: none; font-size: 14px; color: var(--tinta-2); }
+.leyenda li { display: inline-flex; align-items: center; gap: 8px; }
+.muestra { width: 14px; height: 14px; flex: none; }
+.muestra.es { background: var(--es); }
+.muestra.qu { background: var(--qu); }
+.muestra.nada { background: var(--sin-habla); box-shadow: inset 0 0 0 1px #c3c9c4; }
+.muestra.marca-cambio { width: 3px; height: 16px; border-radius: 0; background: var(--tinta); }
+
+.pistas { display: grid; gap: 12px; padding: 20px 24px; background: var(--superficie); border: 1px solid var(--linea); border-radius: var(--radio); }
+.pista { display: grid; grid-template-columns: 208px minmax(0, 1fr); gap: 16px; align-items: center; }
+.pista-nombre { font-size: 14px; line-height: 1.3; }
+.pista-nombre strong, .pista-nombre > span { display: block; }
+.pista-nombre strong { font-weight: 600; font-size: 15px; }
+.pista-nombre .ahora { display: inline-flex; align-items: center; gap: 8px; margin-top: 4px; color: var(--tinta-2); font-variant-numeric: tabular-nums; }
+.pista-nombre .ahora .muestra { width: 10px; height: 10px; }
+.barra { position: relative; height: 40px; background: var(--sin-habla); cursor: pointer; }
+.barra.revelar { animation: revelar 380ms var(--ease-out) both; animation-delay: calc(var(--i, 0) * 60ms); }
+@keyframes revelar { from { clip-path: inset(-8px 100% -8px 0); } to { clip-path: inset(-8px -8px -8px -8px); } }
+.tramo { position: absolute; top: 0; bottom: 0; display: flex; align-items: center; padding-left: 6px; font-size: 12px; font-weight: 600; letter-spacing: 0.02em; overflow: hidden; white-space: nowrap; }
+.tramo.es { background: var(--es); color: #fff; }
+.tramo.qu { background: var(--qu); color: var(--tinta); }
+.tramo + .tramo { box-shadow: inset 1px 0 rgba(255, 255, 255, 0.55); }
+.cambio { position: absolute; top: 0; bottom: 0; width: 2px; margin-left: -1px; background: var(--tinta); }
+.cambio::before { content: ""; position: absolute; top: 0; left: -4px; border: 5px solid transparent; border-top-color: var(--tinta); border-bottom: 0; }
+.cabezal { position: absolute; top: -6px; bottom: -6px; left: 0; width: 3px; margin-left: -1.5px; background: var(--tinta); box-shadow: 0 0 0 1px #fff; pointer-events: none; will-change: transform; }
+.eje { position: relative; height: 20px; font-size: 12px; color: var(--tinta-2); font-variant-numeric: tabular-nums; }
+.eje span { position: absolute; top: 2px; transform: translateX(-50%); white-space: nowrap; }
+.eje span:first-child { transform: none; }
+details { border-top: 1px solid var(--linea); padding-top: 12px; }
+summary { cursor: pointer; font-weight: 500; }
+.tablas-tramos { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; margin-top: 16px; }
+
+/* ---- Entrenar ---- */
+.resumen-pasos { display: flex; flex-wrap: wrap; gap: 16px 32px; align-items: center; margin-bottom: 24px; }
+.pasos { list-style: none; margin: 0; padding: 0; border: 1px solid var(--linea); border-radius: var(--radio); background: var(--superficie); }
+.paso { display: grid; grid-template-columns: 32px minmax(0, 1fr) auto auto; gap: 8px 16px; align-items: center; padding: 16px 20px; border-bottom: 1px solid var(--linea); }
+.paso:last-child { border-bottom: 0; }
+.paso-n { font-variant-numeric: tabular-nums; color: var(--tinta-2); font-weight: 600; }
+.paso-nombre { font-weight: 600; }
+.paso-meta { font-size: 14px; color: var(--tinta-2); }
+.paso-meta code { font-family: var(--mono); font-size: 13px; }
+.estado-paso { display: inline-flex; align-items: center; gap: 8px; font-size: 14px; white-space: nowrap; color: var(--tinta-2); }
+.paso[data-estado="corriendo"] { background: #f6f8f5; }
+.paso[data-estado="corriendo"] .estado-paso { color: var(--tinta); font-weight: 600; }
+.paso[data-estado="listo"] .estado-paso { color: var(--ok); }
+.paso[data-estado="error"] .estado-paso { color: var(--error); font-weight: 600; }
+.progreso { grid-column: 2 / -1; height: 4px; background: var(--sin-habla); overflow: hidden; }
+.progreso div { height: 100%; width: 100%; background: var(--tinta); transform-origin: left; transform: scaleX(0); transition: transform 900ms linear; }
+.consola-cab { display: flex; justify-content: space-between; align-items: baseline; gap: 16px; margin: 32px 0 8px; }
+.consola-cab h2 { margin: 0; }
+.consola { margin: 0; height: 360px; overflow: auto; padding: 16px; background: var(--riel); color: var(--riel-texto); border-radius: var(--radio); font: 13px/1.55 var(--mono); white-space: pre-wrap; overflow-wrap: anywhere; scrollbar-color: #4b5a54 transparent; }
+.consola .comando { color: #fff; font-weight: 600; }
+.consola .bien { color: #8fd3ad; }
+.consola .mal { color: #ffab9c; }
+.consola .apagado { color: var(--riel-tenue); }
+
+/* ---- Datos y resultados ---- */
+.chequeos { list-style: none; padding: 0; margin: 0 0 8px; display: flex; flex-wrap: wrap; gap: 8px 24px; }
+.chequeos li { display: inline-flex; gap: 8px; align-items: center; }
+.chequeos .si { color: var(--ok); }
+.chequeos .no { color: var(--error); }
+.ejemplos { list-style: none; padding: 0; margin: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 16px; }
+.ejemplos li { padding: 16px; background: var(--superficie); border: 1px solid var(--linea); border-radius: var(--radio); display: grid; gap: 8px; }
+.ejemplos .cab { display: flex; justify-content: space-between; gap: 8px; font-size: 14px; }
+.figuras { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 440px), 1fr)); gap: 24px; }
+figure { margin: 0; background: var(--superficie); border: 1px solid var(--linea); border-radius: var(--radio); padding: 16px; }
+figure img { width: 100%; height: auto; display: block; }
+figcaption { font-size: 14px; color: var(--tinta-2); margin-top: 8px; }
+
+@media (max-width: 880px) {
+  .app { grid-template-columns: minmax(0, 1fr); }
+  .riel { padding: 16px; }
+  .riel-dentro { position: static; height: auto; padding: 0; gap: 12px; }
+  .nav { flex-direction: row; overflow-x: auto; }
+  .nav a { white-space: nowrap; }
+  .nav a[aria-current="page"] { box-shadow: inset 0 -2px #fff; }
+  .estado-global { margin-top: 0; }
+  main { padding: 32px 16px 64px; }
+  .pista { grid-template-columns: minmax(0, 1fr); gap: 6px; }
+  .paso { grid-template-columns: 28px minmax(0, 1fr); }
+  .paso > .estado-paso, .paso > .boton { grid-column: 2; justify-self: start; }
+  .fuente, .pistas { padding: 16px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .barra.revelar { animation: none; }
+  .boton, .frases button { transition: background-color 150ms ease; }
+  .boton:active:not(:disabled), .frases button:active { transform: none; }
+  .progreso div { transition: none; }
+}
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="i-subir" viewBox="0 0 24 24"><path d="M12 16V4m0 0-5 5m5-5 5 5M4 16v3a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-3"/></symbol>
+  <symbol id="i-micro" viewBox="0 0 24 24"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></symbol>
+  <symbol id="i-detener" viewBox="0 0 24 24"><rect x="6" y="6" width="12" height="12" rx="1.5"/></symbol>
+  <symbol id="i-bien" viewBox="0 0 24 24"><path d="m5 12.5 4.5 4.5L19 7.5"/></symbol>
+  <symbol id="i-mal" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7.5v5.5m0 3.2v.3"/></symbol>
+  <symbol id="i-reloj" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></symbol>
+  <symbol id="i-correr" viewBox="0 0 24 24"><path d="M8 5.5v13l10-6.5z"/></symbol>
+</svg>
+<a class="saltar" href="#contenido">Saltar al contenido</a>
+<div class="app">
+  <header class="riel"><div class="riel-dentro">
+    <p class="marca">Code-switching <b class="par"><span class="es">español</span>–<span class="qu">quechua</span></b>
+      <span>Detección por tramos de audio</span></p>
+    <nav class="nav" aria-label="Vistas">
+      <a href="#datos">Datos</a>
+      <a href="#entrenar">Entrenar</a>
+      <a href="#resultados">Resultados</a>
+      <a href="#probar">Probar</a>
+    </nav>
+    <p class="estado-global" id="estado-global" aria-live="polite"></p>
+  </div></header>
+
+  <main id="contenido" tabindex="-1">
+    <!-- ================= DATOS ================= -->
+    <section class="vista" id="vista-datos" hidden aria-labelledby="t-datos">
+      <div class="cabecera">
+        <h1 id="t-datos">Datos</h1>
+        <p class="bajada">Clips validados de Common Voice por idioma y partición, y frases sintéticas armadas con ellos. Ningún hablante aparece en dos particiones.</p>
+      </div>
+      <ul class="chequeos" id="chequeos"></ul>
+      <h2>Clips por idioma y partición</h2>
+      <div id="datos-tabla"></div>
+      <h2>Frases sintéticas de prueba</h2>
+      <p class="tenue">Mixtas alternan idiomas; monolingües usan un solo hablante e idioma; de control cambian de hablante sin cambiar de idioma.</p>
+      <div id="datos-ejemplos"></div>
+    </section>
+
+    <!-- ================= ENTRENAR ================= -->
+    <section class="vista" id="vista-entrenar" hidden aria-labelledby="t-entrenar">
+      <div class="cabecera">
+        <h1 id="t-entrenar">Entrenar</h1>
+        <p class="bajada">Corre el pipeline completo o un paso suelto. La corrida sigue aunque cierres o recargues la pestaña; al volver, el registro se muestra entero.</p>
+      </div>
+      <div class="resumen-pasos">
+        <div class="acciones">
+          <button class="boton principal" id="correr-todo" type="button"><svg class="icono" aria-hidden="true"><use href="#i-correr"/></svg>Correr todo</button>
+          <button class="boton peligro" id="cancelar" type="button" hidden>Cancelar</button>
+        </div>
+        <p class="tenue num" id="total-estimado" style="margin:0"></p>
+      </div>
+      <div id="avisos-entrenar"></div>
+      <ol class="pasos" id="pasos" style="margin-top:16px"></ol>
+      <div class="consola-cab">
+        <h2>Registro</h2>
+        <span class="tenue" id="consola-paso"></span>
+      </div>
+      <pre class="consola" id="registro" tabindex="0" aria-label="Registro de la corrida"><span class="apagado">Todavía no hay una corrida en esta sesión del servidor.</span></pre>
+    </section>
+
+    <!-- ================= RESULTADOS ================= -->
+    <section class="vista" id="vista-resultados" hidden aria-labelledby="t-resultados">
+      <div class="cabecera">
+        <h1 id="t-resultados">Resultados</h1>
+        <p class="bajada" id="resultados-bajada">Métricas sobre la partición de prueba, leídas de <code>resultados/metricas.json</code>.</p>
+      </div>
+      <div id="resultados-contenido"></div>
+    </section>
+
+    <!-- ================= PROBAR ================= -->
+    <section class="vista" id="vista-probar" hidden aria-labelledby="t-probar">
+      <div class="cabecera">
+        <h1 id="t-probar">Probar</h1>
+        <p class="bajada">Elige una frase de prueba, sube un audio o graba con el micrófono. Cada modelo marca qué tramos son español y cuáles quechua.</p>
+      </div>
+      <div id="avisos-probar"></div>
+      <div class="fuente">
+        <fieldset class="segmentos" id="modo">
+          <legend>Origen del audio</legend>
+          <label><input type="radio" name="modo" value="frase" checked><span>Frase de prueba</span></label>
+          <label><input type="radio" name="modo" value="archivo"><span>Subir archivo</span></label>
+          <label><input type="radio" name="modo" value="grabar"><span>Grabar</span></label>
+        </fieldset>
+
+        <div id="panel-frase" style="display:grid;gap:16px">
+          <fieldset class="segmentos" id="tipo-frase">
+            <legend>Tipo de frase</legend>
+            <label><input type="radio" name="tipo" value="mixta" checked><span>Mixtas</span></label>
+            <label><input type="radio" name="tipo" value="monolingue"><span>Monolingües</span></label>
+            <label><input type="radio" name="tipo" value="control"><span>Control</span></label>
+          </fieldset>
+          <ul class="frases" id="frases" aria-label="Frases de prueba"></ul>
+        </div>
+
+        <div id="panel-archivo" hidden>
+          <div class="soltar" id="soltar">
+            <svg class="icono" aria-hidden="true" style="width:28px;height:28px"><use href="#i-subir"/></svg>
+            <p>Arrastra un audio aquí o</p>
+            <label class="boton" for="archivo">Elegir archivo</label>
+            <input type="file" id="archivo" accept="audio/*,.wav,.mp3,.m4a,.ogg,.webm,.flac" class="solo-lector">
+            <p class="tenue" style="font-size:14px">WAV, MP3, M4A, OGG o FLAC · entre 1 s y 5 min</p>
+          </div>
+        </div>
+
+        <div id="panel-grabar" hidden>
+          <div class="grabador">
+            <button class="boton principal" id="grabar" type="button"><svg class="icono" aria-hidden="true"><use href="#i-micro"/></svg><span>Empezar a grabar</span></button>
+            <span class="reloj-grab" id="reloj-grab" aria-live="off">0:00</span>
+            <span class="tenue" id="grabar-nota">Habla al menos 1 segundo; la grabación se corta sola a los 5 min.</span>
+          </div>
+        </div>
+      </div>
+
+      <p class="tenue" id="analizando" aria-live="polite" style="margin:24px 0 0"></p>
+      <div id="error-probar" role="alert"></div>
+
+      <div class="resultado" id="resultado" hidden>
+        <div class="resultado-cab">
+          <h2 id="resultado-titulo">Resultado</h2>
+          <ul class="leyenda" aria-label="Leyenda">
+            <li><span class="muestra es"></span>Español</li>
+            <li><span class="muestra qu"></span>Quechua</li>
+            <li><span class="muestra nada"></span>Sin habla</li>
+            <li><span class="muestra marca-cambio"></span>Cambio de idioma</li>
+          </ul>
+        </div>
+        <audio id="reproductor" controls preload="auto"></audio>
+        <div class="pistas" id="pistas"></div>
+        <details>
+          <summary>Ver los tramos como tabla</summary>
+          <div class="tablas-tramos" id="tablas-tramos"></div>
+        </details>
+      </div>
+    </section>
+  </main>
+</div>
+
+<script>
+'use strict';
+const $ = (id) => document.getElementById(id);
+const VISTAS = ['datos', 'entrenar', 'resultados', 'probar'];
+const NOMBRE_IDIOMA = { es: 'Español', qu: 'Quechua' };
+const ALGORITMO = { kmeans: 'k-means', gmm: 'GMM' };
+const SR = 16000;
+
+let estado = null;       // /api/estado
+let fuente = null;       // EventSource de la corrida
+let corrida = null;      // { ids, actual, inicioPaso }
+const cargadas = new Set();  // vistas cuyos datos ya se leyeron
+
+function esc(t) {
+  return String(t).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+}
+const fmt = (x, d = 3) => (x == null || Number.isNaN(x)) ? '—'
+  : (Number(Number(x).toFixed(d)) + 0).toLocaleString('es', { minimumFractionDigits: d, maximumFractionDigits: d });  // + 0 evita «-0,000»
+function duracion(s) {
+  s = Math.round(s);
+  if (s < 60) return `${s} s`;
+  const m = Math.round(s / 60);
+  if (m < 60) return `${m} min`;
+  const h = Math.floor(m / 60), r = m % 60;
+  return r ? `${h} h ${r} min` : `${h} h`;
+}
+const segundos = (t) => `${fmt(t, 1)} s`;
+
+async function pedir(url, opciones) {
+  let r;
+  try {
+    r = await fetch(url, opciones);
+  } catch {
+    throw new Error('No hay conexión con el servidor. ¿Sigue corriendo npm run dev?');
+  }
+  const json = (r.headers.get('Content-Type') || '').includes('json') ? await r.json() : null;
+  if (!r.ok) {
+    const error = new Error(json && json.error ? json.error : `El servidor respondió ${r.status}.`);
+    error.estado = r.status;
+    throw error;
+  }
+  return json;
+}
+function aviso(texto, tipo = '') {
+  const icono = tipo === 'error' ? 'i-mal' : 'i-reloj';
+  return `<div class="aviso ${tipo}"><svg class="icono" aria-hidden="true"><use href="#${icono}"/></svg><p>${texto}</p></div>`;
+}
+const enlacePaso = (id) => {
+  const p = estado && estado.pasos.find((x) => x.id === id);
+  return `<a href="#entrenar">${esc(p ? p.nombre : id)}</a>`;
+};
+
+/* ================= Navegación ================= */
+function ir(vista) {
+  if (!VISTAS.includes(vista)) vista = 'probar';
+  for (const v of VISTAS) {
+    $(`vista-${v}`).hidden = v !== vista;
+    const a = document.querySelector(`.nav a[href="#${v}"]`);
+    if (v === vista) a.setAttribute('aria-current', 'page'); else a.removeAttribute('aria-current');
+  }
+  if (!cargadas.has(vista)) {
+    cargadas.add(vista);
+    ({ datos: cargarDatos, resultados: cargarResultados, probar: () => cargarFrases(), entrenar: () => {} })[vista]();
+  }
+}
+window.addEventListener('hashchange', () => { ir(location.hash.slice(1)); $('contenido').focus({ preventScroll: true }); });
+
+function pintarEstadoGlobal() {
+  const el = $('estado-global');
+  if (corrida && corrida.actual) {
+    const p = estado.pasos.find((x) => x.id === corrida.actual);
+    el.innerHTML = `<strong>Corriendo</strong>${esc(p.nombre)}`;
+  } else if (estado.modelos.profundo && estado.modelos.no_supervisado) {
+    el.innerHTML = `<strong>Modelos listos</strong>Evaluado ${esc(estado.salidas.evaluar || 'nunca')}`;
+  } else {
+    el.innerHTML = '<strong>Faltan modelos</strong>Ve a Entrenar';
+  }
+}
+
+/* ================= Datos ================= */
+async function cargarDatos() {
+  const chequeos = [
+    [estado.datos_crudos, 'Audio de Common Voice en datos/crudo/'],
+    [estado.clips, 'Clips preparados'],
+    [estado.corpus, 'Corpus sintético'],
+  ];
+  $('chequeos').innerHTML = chequeos.map(([ok, texto]) =>
+    `<li class="${ok ? 'si' : 'no'}"><svg class="icono" aria-hidden="true"><use href="#${ok ? 'i-bien' : 'i-mal'}"/></svg>${texto}<span class="solo-lector">: ${ok ? 'sí' : 'falta'}</span></li>`).join('');
+  try {
+    const datos = await pedir('/resultados/datos.json');
+    const filas = [];
+    for (const [idioma, parts] of Object.entries(datos)) {
+      const tot = { clips: 0, horas: 0, hablantes: 0 };
+      for (const parte of ['entrenamiento', 'validacion', 'prueba']) {
+        const r = parts[parte];
+        if (!r) continue;
+        tot.clips += r.clips; tot.horas += r.horas; tot.hablantes += r.hablantes;
+        filas.push(`<tr><th scope="row">${NOMBRE_IDIOMA[idioma] || esc(idioma)}</th><td style="text-align:left">${{ entrenamiento: 'Entrenamiento', validacion: 'Validación', prueba: 'Prueba' }[parte]}</td><td>${r.clips.toLocaleString('es', { useGrouping: 'always' })}</td><td>${fmt(r.horas, 2)}</td><td>${r.hablantes}</td></tr>`);
+      }
+      filas.push(`<tr class="total"><th scope="row">${NOMBRE_IDIOMA[idioma] || esc(idioma)}</th><td style="text-align:left">Total</td><td>${tot.clips.toLocaleString('es', { useGrouping: 'always' })}</td><td>${fmt(tot.horas, 2)}</td><td>${tot.hablantes}</td></tr>`);
+    }
+    $('datos-tabla').innerHTML = `<div class="tabla-caja"><table><thead><tr><th scope="col">Idioma</th><th scope="col" style="text-align:left">Partición</th><th scope="col">Clips</th><th scope="col">Horas</th><th scope="col">Hablantes</th></tr></thead><tbody>${filas.join('')}</tbody></table></div>`;
+  } catch (e) {
+    $('datos-tabla').innerHTML = e.estado === 404
+      ? aviso(`Todavía no hay clips preparados. Corre el paso ${enlacePaso('preparar')}.`)
+      : aviso(esc(e.message), 'error');
+  }
+  try {
+    const grupos = await Promise.all(['mixta', 'monolingue', 'control'].map((t) => pedir(`/api/frases?tipo=${t}`)));
+    const items = grupos.flatMap((g) => g.slice(0, 2));
+    $('datos-ejemplos').innerHTML = `<ul class="ejemplos">${items.map((f) => `
+      <li><div class="cab"><span><strong>${esc(f.id)}</strong> · ${{ mixta: 'mixta', monolingue: 'monolingüe', control: 'control' }[f.tipo]}</span><span class="tenue num">${segundos(f.duracion)}</span></div>
+      <audio controls preload="none" src="/audio/prueba/${encodeURIComponent(f.id)}.wav"></audio>
+      <a href="#probar" data-frase="${esc(f.id)}" data-tipo="${esc(f.tipo)}">Analizar esta frase</a></li>`).join('')}</ul>`;
+  } catch (e) {
+    $('datos-ejemplos').innerHTML = aviso(esc(e.message), e.estado === 409 ? '' : 'error');
+  }
+}
+$('datos-ejemplos').addEventListener('click', (ev) => {
+  const a = ev.target.closest('[data-frase]');
+  if (!a) return;
+  document.querySelector(`#tipo-frase input[value="${a.dataset.tipo}"]`).checked = true;
+  const modo = document.querySelector('#modo input[value="frase"]');
+  modo.checked = true;
+  modo.dispatchEvent(new Event('change'));
+  cargadas.add('probar');
+  cargarFrases(a.dataset.frase);
+  analizarFrase(a.dataset.frase);
+});
+
+/* ================= Entrenar ================= */
+const pasosUI = new Map();  // id -> { estado, el, segundos }
+
+function dibujarPasos() {
+  const total = estado.pasos.reduce((s, p) => s + p.segundos, 0);
+  $('total-estimado').textContent = `Todo el pipeline: ≈ ${duracion(total)} en esta CPU`;
+  $('pasos').innerHTML = '';
+  estado.pasos.forEach((p, i) => {
+    const li = document.createElement('li');
+    li.className = 'paso';
+    li.innerHTML = `
+      <span class="paso-n" aria-hidden="true">${i + 1}</span>
+      <div><div class="paso-nombre">${esc(p.nombre)}</div>
+        <div class="paso-meta"><code>src/${esc(p.script)}</code> · ≈ ${duracion(p.segundos)} · <span class="ultima"></span></div></div>
+      <span class="estado-paso"></span>
+      <button class="boton chico" type="button" data-paso="${esc(p.id)}">Correr</button>
+      <div class="progreso" hidden><div></div></div>`;
+    $('pasos').append(li);
+    pasosUI.set(p.id, { estado: 'pendiente', el: li, datos: p });
+    marcarPaso(p.id, 'pendiente');
+  });
+}
+function marcarPaso(id, nuevo, extra = {}) {
+  const p = pasosUI.get(id);
+  p.estado = nuevo;
+  p.el.dataset.estado = nuevo;
+  const salida = estado.salidas[id];
+  p.el.querySelector('.ultima').textContent = salida ? `última vez ${salida}` : 'nunca corrido';
+  const textos = {
+    pendiente: salida ? ['i-bien', 'Hecho'] : ['i-reloj', 'Pendiente'],
+    espera: ['i-reloj', 'En cola'],
+    corriendo: ['i-correr', 'Corriendo'],
+    listo: ['i-bien', `Listo en ${duracion(extra.segundos || 0)}`],
+    error: ['i-mal', extra.codigo === -15 ? 'Cancelado' : `Falló (código ${extra.codigo})`],
+  }[nuevo];
+  p.el.querySelector('.estado-paso').innerHTML = `<svg class="icono" aria-hidden="true"><use href="#${textos[0]}"/></svg>${textos[1]}`;
+  p.el.querySelector('.progreso').hidden = nuevo !== 'corriendo';
+}
+function bloquear(corriendo) {
+  $('correr-todo').disabled = corriendo;
+  $('cancelar').hidden = !corriendo;
+  for (const b of $('pasos').querySelectorAll('button')) b.disabled = corriendo;
+}
+function pintarAvisosEntrenar() {
+  const a = [];
+  if (!estado.datos_crudos) a.push(aviso('Faltan los <code>.tar.gz</code> de Common Voice en <code>datos/crudo/</code>; el paso de preparación los necesita. Ver README, sección Datos.', 'error'));
+  const p = estado.pasos.find((x) => x.id === 'profundo');
+  if (p) a.push(aviso(`El entrenamiento profundo es el paso largo: ≈ ${duracion(p.segundos)} en esta CPU. Puedes cerrar la pestaña; sigue en el servidor.`));
+  $('avisos-entrenar').innerHTML = a.join('');
+}
+
+const registro = $('registro');
+function escribir(texto, clase) {
+  const abajo = registro.scrollHeight - registro.scrollTop - registro.clientHeight < 24;
+  const linea = document.createElement('span');
+  if (clase) linea.className = clase;
+  linea.textContent = texto + '\n';
+  registro.append(linea);
+  if (abajo) registro.scrollTop = registro.scrollHeight;
+}
+
+function escuchar() {
+  if (fuente) fuente.close();
+  fuente = new EventSource('/api/eventos?desde=0');
+  corrida = { ids: [], actual: null, inicioPaso: 0 };
+  fuente.onmessage = (ev) => manejar(JSON.parse(ev.data));
+  fuente.onerror = () => {
+    if (fuente.readyState === EventSource.CLOSED) $('estado-global').innerHTML = '<strong>Sin conexión</strong>Reinicia npm run dev';
+  };
+}
+function manejar(e) {
+  if (e.tipo === 'sin_corrida') { fuente.close(); corrida = null; return; }
+  if (e.tipo === 'corrida') {
+    corrida.ids = e.pasos;
+    registro.innerHTML = '';
+    for (const [id] of pasosUI) marcarPaso(id, e.pasos.includes(id) ? 'espera' : 'pendiente');
+    bloquear(true);
+    escribir(`Corrida iniciada a las ${e.hora}`, 'apagado');
+  } else if (e.tipo === 'inicio') {
+    corrida.actual = e.paso;
+    corrida.inicioPaso = e.t * 1000;
+    marcarPaso(e.paso, 'corriendo');
+    $('consola-paso').textContent = pasosUI.get(e.paso).datos.nombre;
+    escribir('');
+    escribir(`$ python src/${pasosUI.get(e.paso).datos.script}`, 'comando');
+  } else if (e.tipo === 'linea') {
+    escribir(e.texto);
+  } else if (e.tipo === 'fin') {
+    corrida.actual = null;
+    marcarPaso(e.paso, e.codigo === 0 ? 'listo' : 'error', { segundos: e.segundos, codigo: e.codigo });
+    escribir(e.codigo === 0 ? `Terminó en ${duracion(e.segundos)}` : `Salió con código ${e.codigo}`, e.codigo === 0 ? 'bien' : 'mal');
+  } else if (e.tipo === 'terminado') {
+    fuente.close();
+    finalizar(e);
+  }
+  pintarEstadoGlobal();
+}
+async function finalizar(e) {
+  bloquear(false);
+  $('consola-paso').textContent = '';
+  escribir(e.ok ? 'Corrida terminada.' : e.cancelada ? 'Corrida cancelada.' : 'La corrida se detuvo por un error; el registro de arriba muestra la causa.', e.ok ? 'bien' : 'mal');
+  estado = await pedir('/api/estado');
+  for (const [id, p] of pasosUI) if (p.estado === 'pendiente' || p.estado === 'espera') marcarPaso(id, 'pendiente');
+  cargadas.clear();  // datos, resultados y frases pueden haber cambiado
+  cargadas.add(location.hash.slice(1) || 'probar');
+  pintarAvisosProbar();
+  pintarEstadoGlobal();
+}
+setInterval(() => {  // avance del paso en curso contra su estimación
+  if (!corrida || !corrida.actual) return;
+  const p = pasosUI.get(corrida.actual);
+  const pasado = (Date.now() - corrida.inicioPaso) / 1000;
+  p.el.querySelector('.progreso div').style.transform = `scaleX(${Math.min(pasado / p.datos.segundos, 0.99)})`;
+  p.el.querySelector('.estado-paso').innerHTML = `<svg class="icono" aria-hidden="true"><use href="#i-correr"/></svg>${duracion(pasado)} de ≈ ${duracion(p.datos.segundos)}`;
+}, 1000);
+
+async function correr(ids) {
+  if (ids.includes('profundo') && estado.modelos.profundo) {
+    const p = estado.pasos.find((x) => x.id === 'profundo');
+    if (!confirm(`Esto vuelve a entrenar el modelo profundo (≈ ${duracion(p.segundos)}) y reemplaza modelos/profundo.pt. ¿Continuar?`)) return;
+  }
+  try {
+    await pedir('/api/correr', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ pasos: ids }) });
+    escuchar();
+  } catch (e) {
+    escribir(e.message, 'mal');
+  }
+}
+$('correr-todo').addEventListener('click', () => correr(estado.pasos.map((p) => p.id)));
+$('pasos').addEventListener('click', (ev) => {
+  const b = ev.target.closest('button[data-paso]');
+  if (b) correr([b.dataset.paso]);
+});
+$('cancelar').addEventListener('click', () => pedir('/api/cancelar', { method: 'POST' }).catch((e) => escribir(e.message, 'mal')));
+
+/* ================= Resultados ================= */
+const MODELOS = [['profundo', 'Profundo (CNN + BiLSTM)'], ['no_supervisado', 'No supervisado'], ['linea_base', 'Línea base (clase mayoritaria)']];
+function tablaModelos(bloque, filas, caption) {
+  const modelos = MODELOS.filter(([id]) => bloque[id]);
+  const cuerpo = filas.map(([nombre, leer, mayorMejor = true]) => {
+    const vals = modelos.map(([id]) => leer(bloque[id]));
+    // La línea base no compite: nunca predice cambios, así que su precisión y sus falsos cambios son triviales.
+    const validos = vals.filter((v, i) => v != null && modelos[i][0] !== 'linea_base');
+    const mejor = validos.length ? (mayorMejor ? Math.max(...validos) : Math.min(...validos)) : null;
+    return `<tr><th scope="row">${nombre}</th>${vals.map((v) => `<td class="${v === mejor && modelos.length > 1 ? 'mejor' : ''}">${fmt(v)}</td>`).join('')}</tr>`;
+  }).join('');
+  return `<div class="tabla-caja"><table><caption>${caption}</caption><thead><tr><th scope="col">Métrica</th>${modelos.map(([, n]) => `<th scope="col">${n}</th>`).join('')}</tr></thead><tbody>${cuerpo}</tbody></table></div>`;
+}
+const FILAS_TRAMA = [
+  ['F1 macro por trama', (m) => m.trama.f1_macro],
+  ['Exactitud por trama', (m) => m.trama.exactitud],
+  ['F1 español', (m) => m.trama.f1_es],
+  ['F1 quechua', (m) => m.trama.f1_qu],
+  ['Cambios: precisión (±200 ms)', (m) => m.cambios.precision],
+  ['Cambios: exhaustividad (±200 ms)', (m) => m.cambios.exhaustividad],
+  ['Cambios: F1 (±200 ms)', (m) => m.cambios.f1],
+];
+const FIGURAS = [
+  ['ejemplos_lineas_tiempo.png', 'Líneas de tiempo de frases de prueba: verdad y predicción de cada modelo'],
+  ['curvas_entrenamiento.png', 'Pérdida y F1 de validación por época del modelo profundo'],
+  ['matriz_profundo.png', 'Matriz de confusión por trama del modelo profundo'],
+  ['matriz_no_supervisado.png', 'Matriz de confusión por trama del modelo no supervisado'],
+  ['silueta_k.png', 'Coeficiente de silueta según el número de grupos k'],
+];
+async function cargarResultados() {
+  const caja = $('resultados-contenido');
+  let m;
+  try {
+    m = await pedir('/resultados/metricas.json');
+  } catch (e) {
+    caja.innerHTML = e.estado === 404 ? aviso(`Todavía no hay métricas. Corre el paso ${enlacePaso('evaluar')}.`) : aviso(esc(e.message), 'error');
+    return;
+  }
+  const p = m.prueba;
+  if (m.generado) $('resultados-bajada').innerHTML = `Métricas sobre la partición de prueba, leídas de <code>resultados/metricas.json</code> (evaluado el ${esc(m.generado.replace('T', ' a las '))}).`;
+  const html = [];
+  html.push('<h2 style="margin-top:0">Comparación de modelos</h2>');
+  html.push(tablaModelos(p, [...FILAS_TRAMA,
+    ['Frases de control con algún cambio falso', (x) => x.falsos_cambios_control, false]],
+  'En negrita, el mejor de los dos modelos entrenados. La línea base siempre responde la clase mayoritaria y nunca marca cambios. En la última fila, menos es mejor.'));
+  html.push('<h2>F1 macro por tipo de frase</h2>');
+  html.push(tablaModelos(p, [['Mixta', (x) => x.por_tipo.mixta && x.por_tipo.mixta.trama.f1_macro],
+    ['Monolingüe', (x) => x.por_tipo.monolingue && x.por_tipo.monolingue.trama.f1_macro],
+    ['Control', (x) => x.por_tipo.control && x.por_tipo.control.trama.f1_macro]], 'Por trama, dentro de cada tipo'));
+  html.push('<h2>Exactitud por duración del fragmento</h2>');
+  html.push(tablaModelos(p, [['Menos de 1 s', (x) => x.por_duracion['<1s']], ['De 1 a 2 s', (x) => x.por_duracion['1-2s']],
+    ['2 s o más', (x) => x.por_duracion['>=2s']]], 'Tramas de habla agrupadas por la duración del fragmento original'));
+  const v = m.no_supervisado_ventanas;
+  if (v) {
+    html.push('<h2>Agrupamiento de ventanas (no supervisado)</h2>');
+    const algs = Object.entries(v.por_algoritmo || {});
+    html.push(`<div class="tabla-caja"><table><caption>${v.n_ventanas.toLocaleString('es', { useGrouping: 'always' })} ventanas de 500 ms. Elegido: ${esc(ALGORITMO[v.algoritmo] || v.algoritmo)}, silueta con k = 2: ${fmt(v.silueta)}.</caption>
+      <thead><tr><th scope="col">Algoritmo</th><th scope="col">ARI</th><th scope="col">NMI</th><th scope="col">Pureza</th></tr></thead>
+      <tbody>${algs.map(([a, r]) => `<tr><th scope="row">${esc(ALGORITMO[a] || a)}</th><td>${fmt(r.ari)}</td><td>${fmt(r.nmi)}</td><td>${fmt(r.pureza)}</td></tr>`).join('')}</tbody></table></div>`);
+  }
+  html.push('<h2>Grabaciones reales</h2>');
+  if (m.reales && typeof m.reales === 'object') {
+    const reales = Object.fromEntries(Object.entries(m.reales).filter(([k]) => k !== 'omitidos'));
+    html.push(tablaModelos(reales, FILAS_TRAMA, 'Audios de datos/reales/ con etiquetas de Audacity'));
+    if ((m.reales.omitidos || []).length) html.push(aviso(`Se omitieron ${m.reales.omitidos.length} grabaciones: ${m.reales.omitidos.map((o) => `${esc(o.archivo)} (${esc(o.motivo)})`).join('; ')}.`));
+  } else {
+    html.push(`<p class="tenue">Esta corrida no tiene grabaciones reales etiquetadas en <code>datos/reales/</code>; solo hay resultados sobre frases sintéticas.</p>`);
+  }
+  html.push('<h2>Gráficos</h2>');
+  html.push(`<div class="figuras">${FIGURAS.map(([archivo, texto]) => `<figure><img src="/resultados/figuras/${archivo}" alt="${esc(texto)}" loading="lazy" onerror="this.replaceWith(Object.assign(document.createElement('p'),{className:'tenue',textContent:'Falta ${archivo}; corre la evaluación.'}))"><figcaption>${esc(texto)}</figcaption></figure>`).join('')}</div>`);
+  caja.innerHTML = html.join('');
+}
+
+/* ================= Probar ================= */
+let turno = 0;               // descarta respuestas de análisis viejos
+let urlAudio = null;          // object URL del audio local en el reproductor
+let actual = null;            // { datos, pistas: [{ tramos, ahoraEl, cabezalEl }] }
+
+function pintarAvisosProbar() {
+  const faltan = [];
+  if (!estado.modelos.profundo) faltan.push(['profundo', 'el modelo profundo']);
+  if (!estado.modelos.no_supervisado) faltan.push(['no_supervisado', 'el modelo no supervisado']);
+  $('avisos-probar').innerHTML = faltan.map(([id, n]) => aviso(`Falta entrenar ${n}. Corre el paso ${enlacePaso(id)}.`, 'error')).join('');
+  if (faltan.length) $('avisos-probar').style.marginBottom = '16px';
+}
+
+for (const input of document.querySelectorAll('#modo input')) {
+  input.addEventListener('change', () => {
+    for (const m of ['frase', 'archivo', 'grabar']) $(`panel-${m}`).hidden = input.value !== m;
+  });
+}
+for (const input of document.querySelectorAll('#tipo-frase input')) input.addEventListener('change', () => cargarFrases());
+
+async function cargarFrases(marcada) {
+  const tipo = document.querySelector('#tipo-frase input:checked').value;
+  const lista = $('frases');
+  try {
+    const frases = await pedir(`/api/frases?tipo=${tipo}`);
+    lista.innerHTML = frases.map((f) => `<li><button type="button" data-id="${esc(f.id)}" aria-pressed="${f.id === marcada}"><span>${esc(f.id.replace('pru_', ''))}</span><span class="dur">${segundos(f.duracion)}</span></button></li>`).join('');
+  } catch (e) {
+    lista.innerHTML = `<li>${aviso(e.estado === 409 ? `${esc(e.message)}` : esc(e.message), 'error')}</li>`;
+  }
+}
+$('frases').addEventListener('click', (ev) => {
+  const b = ev.target.closest('button[data-id]');
+  if (!b) return;
+  for (const x of $('frases').querySelectorAll('button')) x.setAttribute('aria-pressed', x === b);
+  analizarFrase(b.dataset.id);
+});
+
+function empezar(texto) {
+  const mio = ++turno;
+  $('error-probar').innerHTML = '';
+  $('analizando').textContent = texto;
+  return mio;
+}
+function fallar(mio, mensaje, que = '') {
+  if (mio !== turno) return;
+  $('analizando').textContent = '';
+  $('resultado').hidden = true;  // el resultado anterior no debe parecer el de este audio
+  $('reproductor').pause();
+  $('error-probar').innerHTML = `<div class="aviso error" style="margin-top:16px"><svg class="icono" aria-hidden="true"><use href="#i-mal"/></svg><p><strong>No se pudo analizar${que ? ' ' + esc(que) : ''}</strong>${esc(mensaje)}</p></div>`;
+}
+
+async function analizarFrase(id) {
+  const mio = empezar(`Analizando la frase ${id}…`);
+  try {
+    const datos = await pedir(`/api/frase/${encodeURIComponent(id)}`);
+    if (mio !== turno) return;
+    mostrar(datos, `/audio/prueba/${encodeURIComponent(id)}.wav`, `Frase ${id}`);
+  } catch (e) { fallar(mio, e.message, `la frase ${id}`); }
+}
+
+function codificarWav(muestras, sr) {
+  const buf = new ArrayBuffer(44 + muestras.length * 2);
+  const v = new DataView(buf);
+  const txt = (o, s) => { for (let i = 0; i < s.length; i++) v.setUint8(o + i, s.charCodeAt(i)); };
+  txt(0, 'RIFF'); v.setUint32(4, 36 + muestras.length * 2, true); txt(8, 'WAVE');
+  txt(12, 'fmt '); v.setUint32(16, 16, true); v.setUint16(20, 1, true); v.setUint16(22, 1, true);
+  v.setUint32(24, sr, true); v.setUint32(28, sr * 2, true); v.setUint16(32, 2, true); v.setUint16(34, 16, true);
+  txt(36, 'data'); v.setUint32(40, muestras.length * 2, true);
+  for (let i = 0; i < muestras.length; i++) {
+    const s = Math.max(-1, Math.min(1, muestras[i]));
+    v.setInt16(44 + i * 2, s < 0 ? s * 0x8000 : s * 0x7fff, true);
+  }
+  return new Blob([buf], { type: 'audio/wav' });
+}
+// Decodifica cualquier formato que entienda el navegador y lo deja en WAV PCM16 mono de 16 kHz.
+// Devuelve null si el navegador no puede decodificarlo: entonces se manda el archivo tal cual y
+// el servidor responde con su propio mensaje.
+async function aWav16k(blob) {
+  const ctx = new AudioContext();
+  let buffer;
+  try {
+    buffer = await ctx.decodeAudioData(await blob.arrayBuffer());
+  } catch {
+    return null;
+  } finally {
+    ctx.close();
+  }
+  const n = Math.round(buffer.duration * SR);
+  if (n < 1) return null;
+  const off = new OfflineAudioContext(1, n, SR);
+  const fuenteAudio = off.createBufferSource();
+  fuenteAudio.buffer = buffer;
+  fuenteAudio.connect(off.destination);  // destino mono: el navegador promedia los canales
+  fuenteAudio.start();
+  return codificarWav((await off.startRendering()).getChannelData(0), SR);
+}
+async function analizarAudio(blob, nombre) {
+  const mio = empezar(`Analizando ${nombre}…`);
+  try {
+    const wav = await aWav16k(blob);
+    const cuerpo = wav || blob;
+    const datos = await pedir('/api/analizar', { method: 'POST', headers: { 'Content-Type': 'audio/wav' }, body: cuerpo });
+    if (mio !== turno) return;
+    if (urlAudio) URL.revokeObjectURL(urlAudio);
+    urlAudio = URL.createObjectURL(cuerpo);
+    mostrar(datos, urlAudio, nombre.charAt(0).toUpperCase() + nombre.slice(1));
+  } catch (e) { fallar(mio, e.message, nombre); }
+}
+
+$('archivo').addEventListener('change', () => {
+  const f = $('archivo').files[0];
+  if (f) analizarAudio(f, `«${f.name}»`);
+  $('archivo').value = '';
+});
+const zona = $('soltar');
+zona.addEventListener('dragover', (ev) => { ev.preventDefault(); zona.classList.add('encima'); });
+zona.addEventListener('dragleave', () => zona.classList.remove('encima'));
+zona.addEventListener('drop', (ev) => {
+  ev.preventDefault();
+  zona.classList.remove('encima');
+  const f = ev.dataTransfer.files[0];
+  if (f) analizarAudio(f, `«${f.name}»`);
+});
+
+let grabador = null, inicioGrab = 0, relojGrab = null;
+function pintarGrabar(grabando) {
+  const b = $('grabar');
+  b.classList.toggle('peligro', grabando);
+  b.classList.toggle('principal', !grabando);
+  b.querySelector('use').setAttribute('href', grabando ? '#i-detener' : '#i-micro');
+  b.querySelector('span').textContent = grabando ? 'Detener y analizar' : 'Empezar a grabar';
+}
+$('grabar').addEventListener('click', async () => {
+  if (grabador) { grabador.stop(); return; }
+  if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia || !window.MediaRecorder) {
+    fallar(empezar(''), 'Este navegador no permite grabar audio. Sube un archivo en su lugar.');
+    return;
+  }
+  let flujo;
+  try {
+    flujo = await navigator.mediaDevices.getUserMedia({ audio: true });
+  } catch (e) {
+    fallar(empezar(''), e.name === 'NotAllowedError'
+      ? 'No hay permiso para usar el micrófono. Permítelo en la barra de direcciones y vuelve a intentar.'
+      : 'No se encontró un micrófono disponible.');
+    return;
+  }
+  const trozos = [];
+  grabador = new MediaRecorder(flujo);
+  grabador.ondataavailable = (ev) => { if (ev.data.size) trozos.push(ev.data); };
+  grabador.onstop = () => {
+    flujo.getTracks().forEach((t) => t.stop());
+    clearInterval(relojGrab);
+    const tipo = grabador.mimeType;
+    grabador = null;
+    pintarGrabar(false);
+    analizarAudio(new Blob(trozos, { type: tipo }), 'la grabación');
+  };
+  grabador.start();
+  inicioGrab = Date.now();
+  $('reloj-grab').textContent = '0:00';
+  relojGrab = setInterval(() => {
+    const s = Math.floor((Date.now() - inicioGrab) / 1000);
+    $('reloj-grab').textContent = `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
+    if (s >= 300 && grabador) grabador.stop();
+  }, 250);
+  pintarGrabar(true);
+});
+
+/* Líneas de tiempo */
+// Paso de las marcas del eje: el menor que deja al menos 56 px entre etiquetas.
+function pasoEje(d, ancho) {
+  const maximo = Math.max(2, Math.floor(ancho / 56));
+  return [1, 2, 5, 10, 15, 30, 60].find((p) => d / p <= maximo) || 60;
+}
+function idiomaEn(tramos, t) {
+  const tr = tramos.find((x) => x.inicio <= t && t < x.fin);
+  return tr ? tr.idioma : null;
+}
+function pista(nombre, detalle, modelo, dur, i) {
+  const pct = (t) => `${(100 * t / dur).toFixed(3)}%`;
+  const el = document.createElement('div');
+  el.className = 'pista';
+  const resumen = `${modelo.tramos.length} ${modelo.tramos.length === 1 ? 'tramo' : 'tramos'} · ${modelo.cambios.length} ${modelo.cambios.length === 1 ? 'cambio' : 'cambios'}`;
+  el.innerHTML = `
+    <div class="pista-nombre"><strong>${esc(nombre)} <span class="tenue" style="font-weight:400">· ${esc(detalle)}</span></strong><span class="tenue">${resumen}</span>
+      <span class="ahora"><span class="muestra nada"></span><span>Sin habla</span></span></div>
+    <div class="barra revelar" style="--i:${i}" role="img" aria-label="${esc(nombre)}: ${resumen}. Detalle en la tabla de tramos.">
+      ${modelo.tramos.map((t) => `<div class="tramo ${t.idioma}" style="left:${pct(t.inicio)};width:${pct(t.fin - t.inicio)}">${t.idioma.toUpperCase()}</div>`).join('')}
+      ${modelo.cambios.map((c) => `<div class="cambio" style="left:${pct(c)}"></div>`).join('')}
+      <div class="cabezal"></div>
+    </div>`;
+  el.querySelector('.barra').addEventListener('click', (ev) => {
+    const r = ev.currentTarget.getBoundingClientRect();
+    const reproductor = $('reproductor');
+    reproductor.currentTime = Math.max(0, Math.min(1, (ev.clientX - r.left) / r.width)) * dur;
+  });
+  return { el, tramos: modelo.tramos, ahora: el.querySelector('.ahora'), barra: el.querySelector('.barra'), cabezal: el.querySelector('.cabezal'), ultimo: undefined };
+}
+function tablaTramos(nombre, tramos) {
+  return `<div class="tabla-caja"><table><caption>${esc(nombre)}</caption><thead><tr><th scope="col">Idioma</th><th scope="col">Inicio</th><th scope="col">Fin</th></tr></thead>
+    <tbody>${tramos.length ? tramos.map((t) => `<tr><th scope="row">${NOMBRE_IDIOMA[t.idioma]}</th><td>${segundos(t.inicio)}</td><td>${segundos(t.fin)}</td></tr>`).join('')
+      : '<tr><td colspan="3">Sin tramos de habla</td></tr>'}</tbody></table></div>`;
+}
+function mostrar(datos, src, titulo) {
+  $('analizando').textContent = '';
+  $('resultado').hidden = false;  // visible antes de medir el ancho de las barras
+  const dur = datos.duracion;
+  const filas = [];
+  if (datos.verdad) filas.push(['Verdad', 'metadata de la frase', datos.verdad]);
+  filas.push(['Profundo', 'CNN + BiLSTM', datos.modelos.profundo]);
+  const ns = datos.modelos.no_supervisado;
+  filas.push(['No supervisado', ALGORITMO[ns.algoritmo] || ns.algoritmo, ns]);
+  const pistas = $('pistas');
+  pistas.innerHTML = '';
+  actual = { dur, pistas: filas.map(([n, d, m], i) => pista(n, d, m, dur, i)) };
+  for (const p of actual.pistas) pistas.append(p.el);
+  // Un tramo muy angosto no cabe su etiqueta; el color y la tabla de tramos siguen diciendo el idioma.
+  for (const t of pistas.querySelectorAll('.tramo')) if (t.offsetWidth < 26) t.textContent = '';
+  const eje = document.createElement('div');
+  eje.className = 'pista';
+  const paso = pasoEje(dur, actual.pistas[0].barra.clientWidth || pistas.clientWidth);
+  const marcas = [];
+  for (let t = 0; t <= dur + 1e-6; t += paso) marcas.push(`<span style="left:${(100 * t / dur).toFixed(3)}%">${t} s</span>`);
+  eje.innerHTML = `<span aria-hidden="true"></span><div class="eje" aria-hidden="true">${marcas.join('')}</div>`;
+  pistas.append(eje);
+  $('tablas-tramos').innerHTML = filas.map(([n, , m]) => tablaTramos(n, m.tramos)).join('');
+  $('resultado-titulo').textContent = `${titulo} · ${segundos(dur)}`;
+  const reproductor = $('reproductor');
+  reproductor.src = src;
+  moverCabezal();
+}
+function moverCabezal() {
+  if (!actual) return;
+  const t = $('reproductor').currentTime;
+  for (const p of actual.pistas) {
+    p.cabezal.style.transform = `translateX(${(Math.min(t / actual.dur, 1) * p.barra.clientWidth).toFixed(1)}px)`;
+    const idioma = idiomaEn(p.tramos, t);
+    if (idioma !== p.ultimo) {
+      p.ultimo = idioma;
+      p.ahora.innerHTML = `<span class="muestra ${idioma || 'nada'}"></span><span>${idioma ? NOMBRE_IDIOMA[idioma] : 'Sin habla'}</span>`;
+    }
+  }
+}
+function bucle() {
+  moverCabezal();
+  if (!$('reproductor').paused) requestAnimationFrame(bucle);
+}
+$('reproductor').addEventListener('play', () => requestAnimationFrame(bucle));
+for (const ev of ['seeked', 'timeupdate', 'loadedmetadata']) $('reproductor').addEventListener(ev, moverCabezal);
+window.addEventListener('resize', moverCabezal);
+
+/* ================= Arranque ================= */
+(async function iniciar() {
+  try {
+    estado = await pedir('/api/estado');
+  } catch (e) {
+    $('contenido').innerHTML = `<section class="vista">${aviso(esc(e.message), 'error')}</section>`;
+    return;
+  }
+  dibujarPasos();
+  pintarAvisosEntrenar();
+  pintarAvisosProbar();
+  pintarEstadoGlobal();
+  ir(location.hash.slice(1));
+  if (estado.hay_corrida) escuchar();
+})();
+</script>
+</body>
+</html>

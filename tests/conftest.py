@@ -54,3 +54,39 @@ def indice_falso(tmp_path, tono, silencio, monkeypatch):
     (clips / 'indice.csv').write_text('\n'.join(filas) + '\n', encoding='utf-8')
     monkeypatch.setattr('sintetizar.CLIPS', clips)
     return clips
+
+
+@pytest.fixture(scope='session')
+def corpus_falso(tmp_path_factory):
+    """Corpus sintético mínimo con el formato de generar_particion: 40 frases de
+    entrenamiento y 10 de validación; ES = tono grave, QU = tono agudo. Solo lectura."""
+    import json
+
+    import soundfile as sf
+
+    from caracteristicas import logmel
+    from sintetizar import componer
+
+    def tono(dur_s, f):
+        t = np.arange(int(dur_s * SR)) / SR
+        return (0.5 * np.sin(2 * np.pi * f * t)).astype(np.float32)
+
+    banco = {idioma: {f'{idioma}{h}': [(tono(0.5 + 0.1 * k, 200.0 + 100 * (i * 4 + h)),
+                                         'M' if h % 2 else 'F') for k in range(6)]
+                      for h in range(4)}
+             for i, idioma in enumerate(('es', 'qu'))}
+    raiz = tmp_path_factory.mktemp('sintetico')
+    rng = np.random.default_rng(0)
+    patron = ['mixta', 'mixta', 'mixta', 'monolingue', 'control']
+    for particion, n in (('entrenamiento', 40), ('validacion', 10)):
+        destino = raiz / particion
+        destino.mkdir()
+        with open(destino / 'meta.jsonl', 'w', encoding='utf-8') as meta:
+            for i in range(n):
+                id_ = f'{particion[:3]}_{i:05d}'
+                frase = componer(patron[i % len(patron)], banco, rng)
+                sf.write(destino / f'{id_}.wav', frase['audio'], SR, subtype='PCM_16')
+                np.savez_compressed(destino / f'{id_}.npz', logmel=logmel(frase['audio']),
+                                    etiquetas=frase['etiquetas'])
+                meta.write(json.dumps({'id': id_, **frase['meta']}, ensure_ascii=False) + '\n')
+    return raiz

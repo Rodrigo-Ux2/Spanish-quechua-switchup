@@ -106,7 +106,7 @@ def test_main_sin_indice_sale_con_1(tmp_path, monkeypatch, capsys):
 def test_generar_particion_proporciones(tmp_path, monkeypatch, indice_falso):
     monkeypatch.setattr('sintetizar.SINTETICO', tmp_path)
     generar_particion('entrenamiento', 100, semilla=3)
-    tipos = [json.loads(l)['tipo'] for l in (tmp_path / 'entrenamiento' / 'meta.jsonl').open()]
+    tipos = [json.loads(l)['tipo'] for l in (tmp_path / 'entrenamiento' / 'meta.jsonl').read_text().splitlines()]
     assert len(tipos) == 100 and 50 <= tipos.count('mixta') <= 70
     assert len(list((tmp_path / 'entrenamiento').glob('*.npz'))) == 100
     z = np.load(next((tmp_path / 'entrenamiento').glob('*.npz')))

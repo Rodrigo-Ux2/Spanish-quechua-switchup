@@ -8,7 +8,7 @@ import re
 import sys
 import tarfile
 import tempfile
-from multiprocessing import Pool
+from multiprocessing import get_context
 from pathlib import Path
 
 import soundfile as sf
@@ -180,7 +180,7 @@ def preparar(rutas_tar: list[Path], horas_max: float = 12.0,
                 for origen, meta in trabajos:
                     rel = Path(idioma) / meta['particion'] / f"{meta['hablante'][:8]}_{meta['n']}.wav"
                     args.append((str(origen), str(CLIPS / rel)))
-                with Pool() as pool:
+                with get_context('spawn').Pool() as pool:
                     duraciones = pool.map(_procesar, args, chunksize=16)
             for (_, meta), (_, destino), dur in zip(trabajos, args, duraciones):
                 if isinstance(dur, str):

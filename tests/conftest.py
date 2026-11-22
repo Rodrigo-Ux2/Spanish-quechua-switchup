@@ -29,7 +29,7 @@ def banco_falso(tono):
     for i, idioma in enumerate(('es', 'qu')):
         banco[idioma] = {}
         for h in range(4):
-            f = 200.0 + 20 * (i * 4 + h)
+            f = 200.0 + 100 * (i * 4 + h)
             banco[idioma][f'{idioma}{h}'] = [
                 (tono(1.0 + 0.2 * k, f), 'M' if h % 2 else 'F') for k in range(6)]
     return banco
@@ -44,7 +44,7 @@ def indice_falso(tmp_path, tono, silencio, monkeypatch):
     for i, idioma in enumerate(('es', 'qu')):
         (clips / idioma / 'entrenamiento').mkdir(parents=True)
         for h in range(4):
-            f = 200.0 + 20 * (i * 4 + h)
+            f = 200.0 + 100 * (i * 4 + h)
             for n in range(3):
                 y = np.concatenate([tono(1.5, f), silencio(0.3), tono(1.5, f),
                                     silencio(0.3), tono(1.5, f)])

@@ -70,6 +70,17 @@ def ventanas_de_particion(dir_particion: Path, max_ventanas: int | None,
     return out
 
 
+def _completar_mapa(mapa: dict) -> dict:
+    """Mapa grupo → idioma con los dos grupos; el que falte toma el idioma no usado
+    (ES si el mapa está vacío), para que la inferencia nunca encuentre una clave ausente."""
+    mapa = {int(g): int(l) for g, l in mapa.items()}
+    for g in (0, 1):
+        if g not in mapa:
+            usados = set(mapa.values())
+            mapa[g] = ES if not usados else (QU if ES in usados else ES)
+    return mapa
+
+
 def grupos_de_ventanas(modelo: dict, X: np.ndarray, algoritmo: str) -> np.ndarray:
     """Grupos crudos (sin mapear) de las ventanas X."""
     if len(X) == 0:
@@ -128,8 +139,7 @@ def entrenar_no_supervisado(dir_sintetico: Path = SINTETICO, max_ventanas: int =
     valido = val['idioma'] != IGNORAR
     grupos = {a: grupos_de_ventanas(modelo, val['X'], a) for a in ALGORITMOS}
     for a in ALGORITMOS:
-        modelo['mapa'][a] = {int(g): int(l) for g, l in
-                             mapear_grupos(grupos[a], val['idioma']).items()}
+        modelo['mapa'][a] = _completar_mapa(mapear_grupos(grupos[a], val['idioma']))
     ref, preds = [], {a: [] for a in ALGORITMOS}
     for wav in sorted((Path(dir_sintetico) / 'validacion').glob('*.wav')):
         y = cargar_audio(wav)

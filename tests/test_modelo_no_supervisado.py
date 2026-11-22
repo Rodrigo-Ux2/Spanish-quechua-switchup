@@ -37,3 +37,16 @@ def test_predecir_longitud_e_ignorar(modelo_ns_entrenado, tono, silencio):
 def test_cargar_sin_entrenar(tmp_path):
     with pytest.raises(ErrorModelo, match='no está entrenado'):
         cargar_no_supervisado(tmp_path / 'no.joblib')
+
+
+def test_completar_mapa_y_predecir_con_grupo_ausente(modelo_ns_entrenado, tono):
+    from modelo_no_supervisado import _completar_mapa
+    assert _completar_mapa({}) == {0: ES, 1: QU}
+    assert _completar_mapa({0: QU}) == {0: QU, 1: ES}
+    assert _completar_mapa({1: ES}) == {0: QU, 1: ES}
+    assert _completar_mapa({0: ES, 1: ES}) == {0: ES, 1: ES}
+    # un modelo cuyo mapa vino de una validación con un solo grupo no debe fallar
+    modelo = {**modelo_ns_entrenado,
+              'mapa': {a: _completar_mapa({0: QU}) for a in ('kmeans', 'gmm')}}
+    p = predecir_no_supervisado(modelo, tono(2.0, f=200))
+    assert set(np.unique(p)) <= {ES, QU}

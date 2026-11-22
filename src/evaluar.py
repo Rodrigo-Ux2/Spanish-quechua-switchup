@@ -16,7 +16,7 @@ matplotlib.use('Agg')
 import matplotlib.pyplot as plt  # noqa: E402
 from sklearn.metrics import adjusted_rand_score, normalized_mutual_info_score  # noqa: E402
 
-from audio import cargar_audio, mascara_habla, n_tramas  # noqa: E402
+from audio import ErrorAudio, cargar_audio, mascara_habla, n_tramas  # noqa: E402
 from config import (ES, FIGURAS, HOP, IGNORAR, MODELOS, NOMBRES, QU,  # noqa: E402
                     REALES, RESULTADOS, SEMILLA, SINTETICO, SR)
 from metricas import contar_cambios, metricas_trama, prf, tasa_falsos_cambios  # noqa: E402
@@ -143,15 +143,21 @@ def evaluar_reales(dir_reales: Path, predictores: dict[str, Callable]) -> dict |
     if not wavs:
         return None
     acum = {n: _Acumulador() for n in predictores}
+    omitidos = []
     for wav in wavs:
-        y = cargar_audio(wav)
-        tr = leer_etiquetas_audacity(wav.with_suffix('.txt'))
+        try:
+            y = cargar_audio(wav)
+            tr = leer_etiquetas_audacity(wav.with_suffix('.txt'))
+        except (ErrorAudio, ValueError) as e:
+            print(f'Se omite {wav.name}: {e}', file=sys.stderr, flush=True)
+            omitidos.append({'archivo': wav.name, 'motivo': str(e)})
+            continue
         ref = etiquetas_desde_tramos(tr, n_tramas(len(y)), mascara_habla(y))
         cambios_ref = puntos_cambio(tramos(ref))
         for nombre, predictor in predictores.items():
             pred = np.asarray(predictor(y))
             acum[nombre].agregar(ref, pred, cambios_ref, puntos_cambio(tramos(pred)))
-    return {n: a.resultado() for n, a in acum.items()}
+    return {**{n: a.resultado() for n, a in acum.items()}, 'omitidos': omitidos}
 
 
 def _metricas_ventanas(ns: dict, dir_prueba: Path, silueta_k2: float) -> dict:
@@ -259,6 +265,15 @@ def _ejemplos(dir_prueba: Path, predictores: dict) -> list[dict]:
     return salida
 
 
+def _leer_json(ruta: Path, paso: str) -> dict:
+    if not ruta.exists():
+        raise ErrorModelo(f'Falta {ruta.name}. Corre el paso "{paso}".')
+    try:
+        return json.loads(ruta.read_text(encoding='utf-8'))
+    except ValueError:
+        raise ErrorModelo(f'{ruta.name} está dañado. Corre el paso "{paso}".') from None
+
+
 def _paso(texto: str) -> None:
     print(texto, flush=True)
 
@@ -269,19 +284,24 @@ def main() -> None:
     if not prueba.exists():
         print('Primero genera el corpus sintético (src/sintetizar.py).', file=sys.stderr)
         sys.exit(1)
+    if not (prueba / 'meta.jsonl').exists():
+        print('Primero genera el corpus sintético (src/sintetizar.py).', file=sys.stderr)
+        sys.exit(1)
     try:
         profundo = cargar_profundo(MODELOS / 'profundo.pt')
         ns = cargar_no_supervisado(MODELOS / 'no_supervisado.joblib')
-        with open(RESULTADOS / 'entrenamiento_profundo.json', encoding='utf-8') as f:
-            entrenamiento = json.load(f)
-        with open(RESULTADOS / 'no_supervisado.json', encoding='utf-8') as f:
-            res_ns = json.load(f)
+        entrenamiento = _leer_json(RESULTADOS / 'entrenamiento_profundo.json',
+                                   'Entrenar modelo profundo')
+        res_ns = _leer_json(RESULTADOS / 'no_supervisado.json', 'Entrenar modelo no supervisado')
+        silueta_k2 = res_ns['silueta_por_k']['2']
         predictores = {
             'profundo': lambda y: suavizar(predecir_profundo(profundo, y)),
             'no_supervisado': lambda y: suavizar(predecir_no_supervisado(ns, y)),
             'linea_base': _linea_base(SINTETICO / 'entrenamiento')}
-    except (ErrorModelo, FileNotFoundError) as e:
-        print(str(e), file=sys.stderr)
+    except (ErrorModelo, KeyError) as e:
+        print(e.args[0] if isinstance(e, ErrorModelo) else
+              'Los resultados del modelo no supervisado están incompletos. '
+              'Corre el paso "Entrenar modelo no supervisado".', file=sys.stderr)
         sys.exit(1)
     _paso('Evaluando la partición de prueba...')
     metricas = {'prueba': evaluar_particion(prueba, predictores)}
@@ -289,7 +309,7 @@ def main() -> None:
     metricas['reales'] = evaluar_reales(REALES, predictores)
     _paso('Calculando métricas por ventana del modelo no supervisado...')
     metricas['no_supervisado_ventanas'] = _metricas_ventanas(
-        ns, prueba, res_ns['silueta_por_k']['2'])
+        ns, prueba, silueta_k2)
     metricas['generado'] = datetime.now().isoformat(timespec='seconds')
     RESULTADOS.mkdir(parents=True, exist_ok=True)
     with open(RESULTADOS / 'metricas.json', 'w', encoding='utf-8') as f:

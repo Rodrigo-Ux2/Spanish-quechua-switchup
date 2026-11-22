@@ -92,3 +92,38 @@ def test_generar_figuras_humo(tmp_path):
     for n in ('curvas_entrenamiento', 'matriz_profundo', 'matriz_no_supervisado',
               'silueta_k', 'ejemplos_lineas_tiempo'):
         assert (tmp_path / 'fig' / f'{n}.png').stat().st_size > 0
+
+
+def test_evaluar_reales_omite_archivos_malos(tmp_path, tono, capsys):
+    sf.write(tmp_path / 'bueno.wav', tono(3.0), SR)
+    (tmp_path / 'bueno.txt').write_text('0.0\t3.0\tes\n')
+    sf.write(tmp_path / 'malo.wav', tono(3.0), SR)
+    (tmp_path / 'malo.txt').write_text('0.0\t3.0\taymara\n')
+    (tmp_path / 'roto.wav').write_bytes(b'no es audio')
+    (tmp_path / 'roto.txt').write_text('0.0\t1.0\tes\n')
+    r = evaluar_reales(tmp_path, {'todo_es': lambda y: np.zeros(1 + len(y) // 160, int)})
+    assert r['todo_es']['trama']['exactitud'] == 1.0
+    assert {o['archivo'] for o in r['omitidos']} == {'malo.wav', 'roto.wav'}
+    err = capsys.readouterr().err
+    assert 'malo.wav' in err and 'roto.wav' in err
+
+
+@pytest.mark.parametrize('faltante, paso', [
+    ('entrenamiento_profundo.json', 'Entrenar modelo profundo'),
+    ('no_supervisado.json', 'Entrenar modelo no supervisado')])
+def test_main_json_ausente(tmp_path, monkeypatch, capsys, faltante, paso):
+    (tmp_path / 'sintetico' / 'prueba').mkdir(parents=True)
+    (tmp_path / 'sintetico' / 'prueba' / 'meta.jsonl').write_text('')
+    (tmp_path / 'resultados').mkdir()
+    for n in ('entrenamiento_profundo.json', 'no_supervisado.json'):
+        if n != faltante:
+            (tmp_path / 'resultados' / n).write_text('{}')
+    monkeypatch.setattr(evaluar, 'SINTETICO', tmp_path / 'sintetico')
+    monkeypatch.setattr(evaluar, 'RESULTADOS', tmp_path / 'resultados')
+    monkeypatch.setattr(evaluar, 'cargar_profundo', lambda ruta: None)
+    monkeypatch.setattr(evaluar, 'cargar_no_supervisado', lambda ruta: None)
+    with pytest.raises(SystemExit) as e:
+        evaluar.main()
+    assert e.value.code == 1
+    err = capsys.readouterr().err
+    assert paso in err and 'Errno' not in err

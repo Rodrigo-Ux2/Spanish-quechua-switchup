@@ -29,7 +29,7 @@ def banco_falso(tono):
     for i, idioma in enumerate(('es', 'qu')):
         banco[idioma] = {}
         for h in range(4):
-            f = 200.0 + 100 * (i * 4 + h)
+            f = 200.0 + 20 * (i * 4 + h)
             banco[idioma][f'{idioma}{h}'] = [
                 (tono(1.0 + 0.2 * k, f), 'M' if h % 2 else 'F') for k in range(6)]
     return banco
@@ -44,7 +44,7 @@ def indice_falso(tmp_path, tono, silencio, monkeypatch):
     for i, idioma in enumerate(('es', 'qu')):
         (clips / idioma / 'entrenamiento').mkdir(parents=True)
         for h in range(4):
-            f = 200.0 + 100 * (i * 4 + h)
+            f = 200.0 + 20 * (i * 4 + h)
             for n in range(3):
                 y = np.concatenate([tono(1.5, f), silencio(0.3), tono(1.5, f),
                                     silencio(0.3), tono(1.5, f)])
@@ -59,7 +59,7 @@ def indice_falso(tmp_path, tono, silencio, monkeypatch):
 @pytest.fixture(scope='session')
 def corpus_falso(tmp_path_factory):
     """Corpus sintético mínimo con el formato de generar_particion: 40 frases de
-    entrenamiento y 10 de validación; ES = tono grave, QU = tono agudo. Solo lectura."""
+    entrenamiento y 10 de validación; ES = tono estable, QU = tono con vibrato. Solo lectura."""
     import json
 
     import soundfile as sf
@@ -67,11 +67,15 @@ def corpus_falso(tmp_path_factory):
     from caracteristicas import logmel
     from sintetizar import componer
 
-    def tono(dur_s, f):
+    def tono(dur_s, f, vibrato):
+        # QU: tono con vibrato (FM de ±150 Hz a 5 Hz); ES: tono estable. La variabilidad
+        # trama a trama sobrevive a la resta de media cepstral por frase, a diferencia de
+        # una frecuencia constante
         t = np.arange(int(dur_s * SR)) / SR
-        return (0.5 * np.sin(2 * np.pi * f * t)).astype(np.float32)
+        fase = 2 * np.pi * f * t - (150 / 5) * np.cos(2 * np.pi * 5 * t) * vibrato
+        return (0.5 * np.sin(fase)).astype(np.float32)
 
-    banco = {idioma: {f'{idioma}{h}': [(tono(0.5 + 0.1 * k, 200.0 + 100 * (i * 4 + h)),
+    banco = {idioma: {f'{idioma}{h}': [(tono(0.5 + 0.1 * k, 200.0 + 20 * (i * 4 + h), i == 1),
                                          'M' if h % 2 else 'F') for k in range(6)]
                       for h in range(4)}
              for i, idioma in enumerate(('es', 'qu'))}
@@ -90,3 +94,38 @@ def corpus_falso(tmp_path_factory):
                                     etiquetas=frase['etiquetas'])
                 meta.write(json.dumps({'id': id_, **frase['meta']}, ensure_ascii=False) + '\n')
     return raiz
+
+
+@pytest.fixture(scope='session')
+def corpus_falso_invertido(corpus_falso, tmp_path_factory):
+    """Copia de corpus_falso con ES y QU intercambiados en los .npz y en meta.jsonl."""
+    import json
+    import shutil
+
+    raiz = tmp_path_factory.mktemp('sintetico_invertido') / 'corpus'
+    shutil.copytree(corpus_falso, raiz)
+    for npz in raiz.glob('*/*.npz'):
+        datos = dict(np.load(npz))
+        e = datos['etiquetas']
+        datos['etiquetas'] = np.where(e == 0, 1, np.where(e == 1, 0, e)).astype(e.dtype)
+        np.savez_compressed(npz, **datos)
+    cambio = {'es': 'qu', 'qu': 'es'}
+    for meta in raiz.glob('*/meta.jsonl'):
+        filas = [json.loads(linea) for linea in meta.read_text(encoding='utf-8').splitlines()]
+        for fila in filas:
+            for frag in fila['fragmentos']:
+                frag['idioma'] = cambio[frag['idioma']]
+        meta.write_text('\n'.join(json.dumps(f, ensure_ascii=False) for f in filas) + '\n',
+                        encoding='utf-8')
+    return raiz
+
+
+@pytest.fixture(scope='session')
+def modelo_ns_entrenado(corpus_falso, tmp_path_factory):
+    """Modelo no supervisado entrenado sobre corpus_falso en carpetas temporales."""
+    from modelo_no_supervisado import cargar_no_supervisado, entrenar_no_supervisado
+
+    destino = tmp_path_factory.mktemp('modelo_ns')
+    entrenar_no_supervisado(corpus_falso, max_ventanas=5000, dir_modelos=destino,
+                            dir_resultados=destino)
+    return cargar_no_supervisado(destino / 'no_supervisado.joblib')

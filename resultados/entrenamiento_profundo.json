@@ -1,0 +1,153 @@
+{
+  "epocas": [
+    {
+      "epoca": 1,
+      "perdida_entrenamiento": 0.5116777093658943,
+      "perdida_validacion": 0.36682062931085824,
+      "f1_validacion": 0.8333880125238318,
+      "segundos": 524.7096927165985
+    },
+    {
+      "epoca": 2,
+      "perdida_entrenamiento": 0.3459768317083277,
+      "perdida_validacion": 0.29169840954865817,
+      "f1_validacion": 0.8772926548463745,
+      "segundos": 474.4174556732178
+    },
+    {
+      "epoca": 3,
+      "perdida_entrenamiento": 0.2724007984024525,
+      "perdida_validacion": 0.23338071082905784,
+      "f1_validacion": 0.905907559505998,
+      "segundos": 476.7064702510834
+    },
+    {
+      "epoca": 4,
+      "perdida_entrenamiento": 0.2487914322975105,
+      "perdida_validacion": 0.2561195650733879,
+      "f1_validacion": 0.8947610722571584,
+      "segundos": 466.9674527645111
+    },
+    {
+      "epoca": 5,
+      "perdida_entrenamiento": 0.20878458772008004,
+      "perdida_validacion": 0.20669893213635723,
+      "f1_validacion": 0.9202746194165967,
+      "segundos": 470.5047495365143
+    },
+    {
+      "epoca": 6,
+      "perdida_entrenamiento": 0.1984851646985543,
+      "perdida_validacion": 0.2118216951871097,
+      "f1_validacion": 0.9113047105735655,
+      "segundos": 467.8645553588867
+    },
+    {
+      "epoca": 7,
+      "perdida_entrenamiento": 0.17302657563117455,
+      "perdida_validacion": 0.19834693680398036,
+      "f1_validacion": 0.9198197670605375,
+      "segundos": 471.7330787181854
+    },
+    {
+      "epoca": 8,
+      "perdida_entrenamiento": 0.15241399866187272,
+      "perdida_validacion": 0.22378571759136243,
+      "f1_validacion": 0.9097232121857406,
+      "segundos": 451.3074064254761
+    },
+    {
+      "epoca": 9,
+      "perdida_entrenamiento": 0.13548620952911158,
+      "perdida_validacion": 0.18227812965845208,
+      "f1_validacion": 0.9286030599049152,
+      "segundos": 457.75357580184937
+    },
+    {
+      "epoca": 10,
+      "perdida_entrenamiento": 0.12644329877989183,
+      "perdida_validacion": 0.24318066177582814,
+      "f1_validacion": 0.9081088978408636,
+      "segundos": 466.5332877635956
+    },
+    {
+      "epoca": 11,
+      "perdida_entrenamiento": 0.12987456013655874,
+      "perdida_validacion": 0.19543166517128346,
+      "f1_validacion": 0.9305221770821859,
+      "segundos": 460.1808536052704
+    },
+    {
+      "epoca": 12,
+      "perdida_entrenamiento": 0.11187713817827982,
+      "perdida_validacion": 0.1874556593229917,
+      "f1_validacion": 0.9312494043860353,
+      "segundos": 365.17857456207275
+    },
+    {
+      "epoca": 13,
+      "perdida_entrenamiento": 0.09998474673291256,
+      "perdida_validacion": 0.18020500028087866,
+      "f1_validacion": 0.9388187888581147,
+      "segundos": 281.3145925998688
+    },
+    {
+      "epoca": 14,
+      "perdida_entrenamiento": 0.08701673665273027,
+      "perdida_validacion": 0.17519482752554974,
+      "f1_validacion": 0.9382142444927238,
+      "segundos": 291.0445747375488
+    },
+    {
+      "epoca": 15,
+      "perdida_entrenamiento": 0.0860464843233595,
+      "perdida_validacion": 0.17231836691003338,
+      "f1_validacion": 0.9395200531545075,
+      "segundos": 293.12253308296204
+    },
+    {
+      "epoca": 16,
+      "perdida_entrenamiento": 0.07945435556227225,
+      "perdida_validacion": 0.18925196290596868,
+      "f1_validacion": 0.9440545962790985,
+      "segundos": 295.5306489467621
+    },
+    {
+      "epoca": 17,
+      "perdida_entrenamiento": 0.07953558856623677,
+      "perdida_validacion": 0.21259694650824756,
+      "f1_validacion": 0.9322726480116627,
+      "segundos": 301.63021969795227
+    },
+    {
+      "epoca": 18,
+      "perdida_entrenamiento": 0.07073151013148436,
+      "perdida_validacion": 0.20592078487157822,
+      "f1_validacion": 0.9340992478891545,
+      "segundos": 308.4099645614624
+    },
+    {
+      "epoca": 19,
+      "perdida_entrenamiento": 0.07657527335495837,
+      "perdida_validacion": 0.1911098393827444,
+      "f1_validacion": 0.9339765626243952,
+      "segundos": 320.4642400741577
+    },
+    {
+      "epoca": 20,
+      "perdida_entrenamiento": 0.07327615570789117,
+      "perdida_validacion": 0.18289633178722295,
+      "f1_validacion": 0.9413614288539193,
+      "segundos": 317.05675530433655
+    },
+    {
+      "epoca": 21,
+      "perdida_entrenamiento": 0.0656768513730672,
+      "perdida_validacion": 0.19742792769227077,
+      "f1_validacion": 0.9388274480979569,
+      "segundos": 319.13512659072876
+    }
+  ],
+  "mejor_epoca": 16,
+  "parametros": 1109250
+}

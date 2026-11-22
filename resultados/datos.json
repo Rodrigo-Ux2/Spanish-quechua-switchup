@@ -1,0 +1,36 @@
+{
+  "es": {
+    "validacion": {
+      "clips": 1010,
+      "horas": 1.1378,
+      "hablantes": 55
+    },
+    "entrenamiento": {
+      "clips": 8682,
+      "horas": 9.7645,
+      "hablantes": 440
+    },
+    "prueba": {
+      "clips": 1072,
+      "horas": 1.2373,
+      "hablantes": 54
+    }
+  },
+  "qu": {
+    "validacion": {
+      "clips": 1206,
+      "horas": 1.1423,
+      "hablantes": 8
+    },
+    "entrenamiento": {
+      "clips": 5983,
+      "horas": 6.16,
+      "hablantes": 61
+    },
+    "prueba": {
+      "clips": 1266,
+      "horas": 1.1877,
+      "hablantes": 8
+    }
+  }
+}

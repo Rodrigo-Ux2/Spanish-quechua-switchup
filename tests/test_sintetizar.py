@@ -111,3 +111,17 @@ def test_generar_particion_proporciones(tmp_path, monkeypatch, indice_falso):
     assert len(list((tmp_path / 'entrenamiento').glob('*.npz'))) == 100
     z = np.load(next((tmp_path / 'entrenamiento').glob('*.npz')))
     assert z['logmel'].shape[1] == 64 and len(z['logmel']) == len(z['etiquetas'])
+
+
+def test_generar_particion_borra_frases_viejas(tmp_path, monkeypatch, indice_falso):
+    monkeypatch.setattr('sintetizar.SINTETICO', tmp_path / 'sint')
+    generar_particion('entrenamiento', 4, semilla=3)
+    otra = tmp_path / 'sint' / 'validacion'
+    otra.mkdir()
+    (otra / 'val_00000.npz').write_bytes(b'x')
+    (tmp_path / 'sint' / 'entrenamiento' / 'notas.txt').write_text('se queda', encoding='utf-8')
+    generar_particion('entrenamiento', 2, semilla=3)
+    destino = tmp_path / 'sint' / 'entrenamiento'
+    assert len(list(destino.glob('*.npz'))) == 2 and len(list(destino.glob('*.wav'))) == 2
+    assert len((destino / 'meta.jsonl').read_text(encoding='utf-8').splitlines()) == 2
+    assert (destino / 'notas.txt').exists() and (otra / 'val_00000.npz').exists()

@@ -157,6 +157,9 @@ def generar_particion(particion: str, n_frases: int, semilla: int) -> None:
     rng.shuffle(tipos)
     destino = SINTETICO / particion
     destino.mkdir(parents=True, exist_ok=True)
+    # Una corrida con menos frases no debe dejar frases viejas mezcladas con las nuevas.
+    for viejo in [*destino.glob('*.wav'), *destino.glob('*.npz')]:
+        viejo.unlink()
     with open(destino / 'meta.jsonl', 'w', encoding='utf-8') as meta:
         for i, tipo in enumerate(tipos):
             id_ = f'{particion[:3]}_{i:05d}'

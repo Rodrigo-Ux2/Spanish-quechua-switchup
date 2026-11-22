@@ -8,6 +8,7 @@ import re
 import sys
 import tarfile
 import tempfile
+import time
 from multiprocessing import get_context
 from pathlib import Path
 
@@ -210,6 +211,7 @@ def _resumen(filas: list[dict]) -> dict:
 
 
 def main() -> None:
+    t0 = time.time()
     tars = sorted(list(CRUDO.glob('*.tar.gz')) + list(CRUDO.glob('*.tar')))
     try:
         idiomas = {r: IDIOMA_DE_LOCALE[locale_de_tar(r)] for r in tars}
@@ -232,6 +234,7 @@ def main() -> None:
     (RESULTADOS / 'datos.json').write_text(
         json.dumps(_resumen(filas), indent=2, ensure_ascii=False), encoding='utf-8')
     print(f'{len(filas)} clips escritos en {CLIPS}')
+    print(f'Duración total: {time.time() - t0:.1f} s')
 
 
 if __name__ == '__main__':

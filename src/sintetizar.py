@@ -4,6 +4,7 @@ import argparse
 import csv
 import json
 import sys
+import time
 from multiprocessing import get_context
 
 import numpy as np
@@ -167,6 +168,7 @@ def generar_particion(particion: str, n_frases: int, semilla: int) -> None:
 
 
 def main() -> None:
+    t0 = time.time()
     p = argparse.ArgumentParser(description='Sintetiza el corpus de code-switching.')
     p.add_argument('--horas-entrenamiento', type=float, default=9)
     p.add_argument('--horas-validacion', type=float, default=1)
@@ -184,7 +186,8 @@ def main() -> None:
         generar_particion(particion, n, SEMILLA + k)
         with open(SINTETICO / particion / 'meta.jsonl', encoding='utf-8') as f:
             total += sum(json.loads(l)['duracion'] for l in f)
-    print(f'Duración total: {total:.1f} s')
+    print(f'Audio sintetizado: {total / 3600:.2f} h')
+    print(f'Duración total: {time.time() - t0:.1f} s')
 
 
 if __name__ == '__main__':

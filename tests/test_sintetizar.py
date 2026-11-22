@@ -71,7 +71,9 @@ def test_aumento_snr_ganancia_y_recorte(tono):
         snr = 10 * np.log10(a**2 * np.sum(x**2) / np.sum(residuo**2))
         assert 19.0 <= snr <= 41.0
         assert 10 ** (-6.1 / 20) <= a <= 10 ** (6.1 / 20)
-    fuerte = _aumentar(tono(1.0) * 2.0, rng)
+    # amplitud 4: ni con -6 dB de ganancia baja de 1, así que el recorte siempre actúa
+    fuerte = _aumentar(tono(1.0) * 8.0, rng)
+    assert np.isclose(np.abs(fuerte).max(), 1.0)
     assert fuerte.max() <= 1.0 and fuerte.min() >= -1.0
 
 

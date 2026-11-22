@@ -132,3 +132,72 @@ def test_pasos_en_orden():
     assert [p['id'] for p in servidor.PASOS] == [
         'preparar', 'sintetizar', 'profundo', 'no_supervisado', 'evaluar', 'informe']
     assert all(p['segundos'] > 0 for p in servidor.PASOS)
+
+
+@pytest.fixture
+def sin_ejecutar(monkeypatch):
+    """Corrida que no lanza ningún script: solo queda terminada."""
+    monkeypatch.setattr(servidor, 'corrida', None)
+    monkeypatch.setattr(servidor.Corrida, 'ejecutar', lambda self: setattr(self, 'terminada', True))
+
+
+def correr(url, cuerpo, tipo='application/json', origen=None):
+    cabeceras = {'Content-Type': tipo, **({'Origin': origen} if origen else {})}
+    return _abrir(urllib.request.Request(url + '/api/correr', data=cuerpo, method='POST', headers=cabeceras))
+
+
+def test_correr_desde_otro_origen(servidor_vivo, sin_ejecutar):
+    r = correr(servidor_vivo, b'{"pasos": ["evaluar"]}', 'text/plain', origen='https://evil.example')
+    assert r.status == 403 and 'error' in json.loads(r.read())
+    assert servidor.corrida is None
+
+
+def test_correr_sin_json(servidor_vivo, sin_ejecutar):
+    r = correr(servidor_vivo, b'{"pasos": ["evaluar"]}', 'text/plain')
+    assert r.status == 400 and servidor.corrida is None
+
+
+def test_correr_paso_desconocido(servidor_vivo, sin_ejecutar):
+    r = correr(servidor_vivo, b'{"pasos": ["borrar_todo"]}', origen=servidor_vivo)
+    assert r.status == 400 and servidor.corrida is None
+
+
+def test_correr_mismo_origen(servidor_vivo, sin_ejecutar):
+    origen = servidor_vivo.replace('127.0.0.1', 'localhost')
+    r = correr(servidor_vivo, b'{"pasos": ["evaluar"]}', 'application/json; charset=utf-8', origen=origen)
+    assert r.status == 202 and json.loads(r.read())['pasos'] == ['evaluar']
+
+
+def test_ruta_con_byte_nulo(servidor_vivo):
+    assert get(servidor_vivo + '/resultados/%00').status == 404
+
+
+@pytest.mark.parametrize('ruta', ['/api/analizar', '/api/correr'])
+def test_largo_negativo(servidor_vivo, ruta):
+    peticion = urllib.request.Request(servidor_vivo + ruta, data=b'', method='POST',
+                                      headers={'Content-Type': 'application/json', 'Content-Length': '-1'})
+    assert _abrir(peticion).status == 400
+
+
+def test_tiempos_corrupto(tmp_path, capsys):
+    ruta = tmp_path / 'tiempos.json'
+    ruta.write_text('{roto', encoding='utf-8')
+    assert servidor.leer_tiempos(ruta) == {}
+    assert 'tiempos.json' in capsys.readouterr().err
+
+
+def test_corrida_guarda_tiempo(tmp_path, monkeypatch):
+    (tmp_path / 'src').mkdir()
+    (tmp_path / 'src' / 'bien.py').write_text('print("listo")\n', encoding='utf-8')
+    (tmp_path / 'src' / 'mal.py').write_text('raise SystemExit(3)\n', encoding='utf-8')
+    tiempos = tmp_path / 'tiempos.json'
+    tiempos.write_text('{"preparar": 66.0}\n', encoding='utf-8')
+    monkeypatch.setattr(servidor, 'RAIZ', tmp_path)
+    monkeypatch.setattr(servidor, '_ruta_tiempos', tiempos)
+    for nombre in ('bien', 'mal'):
+        monkeypatch.setitem(servidor.POR_ID, nombre, {'id': nombre, 'script': f'{nombre}.py', 'segundos': 60.0})
+    servidor.Corrida(['bien']).ejecutar()
+    servidor.Corrida(['mal']).ejecutar()
+    guardado = json.loads(tiempos.read_text(encoding='utf-8'))
+    assert set(guardado) == {'preparar', 'bien'} and guardado['preparar'] == 66.0
+    assert 0 <= guardado['bien'] < 60 and servidor.POR_ID['bien']['segundos'] == guardado['bien']

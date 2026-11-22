@@ -47,7 +47,20 @@ MAX_FRASES = 20
 # solo para que la interfaz muestre una estimación; un paso sin medición usa SEGUNDOS_POR_DEFECTO.
 # 'salida': archivo (relativo a RAIZ) cuya fecha indica cuándo corrió el paso por última vez.
 _ruta_tiempos = RESULTADOS / 'tiempos.json'
-_tiempos = json.loads(_ruta_tiempos.read_text(encoding='utf-8')) if _ruta_tiempos.exists() else {}
+
+
+def leer_tiempos(ruta):
+    """Duraciones medidas por paso; {} si el archivo falta o está dañado (con aviso en consola)."""
+    if not ruta.exists():
+        return {}
+    try:
+        return json.loads(ruta.read_text(encoding='utf-8'))
+    except (OSError, ValueError) as error:
+        print(f'Aviso: no se pudo leer {ruta.name} ({error}); se usan tiempos por defecto.', file=sys.stderr)
+        return {}
+
+
+_tiempos = leer_tiempos(_ruta_tiempos)
 SEGUNDOS_POR_DEFECTO = 60.0
 PASOS = [
     {'id': 'preparar', 'nombre': 'Preparar clips de Common Voice',
@@ -94,19 +107,21 @@ class Corrida:
             self.emitir(tipo='inicio', paso=paso_id)
             inicio = time.monotonic()
             try:
-                self.proceso = subprocess.Popen(
-                    [sys.executable, '-u', str(RAIZ / 'src' / paso['script'])],
-                    cwd=RAIZ, stdin=subprocess.DEVNULL, stdout=subprocess.PIPE,
-                    stderr=subprocess.STDOUT, text=True, encoding='utf-8', errors='replace')
-                for linea in self.proceso.stdout:
-                    self.emitir(tipo='linea', paso=paso_id, texto=linea.rstrip('\n'))
-                codigo = self.proceso.wait()
+                with subprocess.Popen(  # al salir del with se cierra la tubería de salida
+                        [sys.executable, '-u', str(RAIZ / 'src' / paso['script'])],
+                        cwd=RAIZ, stdin=subprocess.DEVNULL, stdout=subprocess.PIPE,
+                        stderr=subprocess.STDOUT, text=True, encoding='utf-8', errors='replace') as self.proceso:
+                    for linea in self.proceso.stdout:
+                        self.emitir(tipo='linea', paso=paso_id, texto=linea.rstrip('\n'))
+                    codigo = self.proceso.wait()
             except OSError as error:
                 self.emitir(tipo='linea', paso=paso_id, texto=f'No se pudo ejecutar: {error}')
                 codigo = -1
-            self.emitir(tipo='fin', paso=paso_id, codigo=codigo,
-                        segundos=round(time.monotonic() - inicio, 1))
-            if codigo != 0:
+            segundos = round(time.monotonic() - inicio, 1)
+            self.emitir(tipo='fin', paso=paso_id, codigo=codigo, segundos=segundos)
+            if codigo == 0:
+                guardar_tiempo(paso_id, segundos)
+            else:
                 ok = False
                 break
         if {'profundo', 'no_supervisado'} & set(self.ids):
@@ -120,6 +135,15 @@ class Corrida:
         self.cancelada = True
         if self.proceso and self.proceso.poll() is None:
             self.proceso.terminate()
+
+
+def guardar_tiempo(paso_id, segundos):
+    """Anota en resultados/tiempos.json la duración de un paso que terminó bien (conserva los demás)."""
+    tiempos = leer_tiempos(_ruta_tiempos)
+    tiempos[paso_id] = segundos
+    _ruta_tiempos.parent.mkdir(parents=True, exist_ok=True)
+    _ruta_tiempos.write_text(json.dumps(tiempos, indent=2, ensure_ascii=False) + '\n', encoding='utf-8')
+    POR_ID[paso_id]['segundos'] = segundos
 
 
 corrida = None                  # la última corrida, terminada o en curso
@@ -147,7 +171,10 @@ def leer_metas():
 def dentro_de(carpeta, relativa):
     """Ruta de un archivo dentro de carpeta, o None si la ruta pedida sale de ella."""
     base = carpeta.resolve()
-    ruta = (base / unquote(relativa)).resolve()
+    try:
+        ruta = (base / unquote(relativa)).resolve()
+    except ValueError:  # p. ej. un byte nulo (%00) en la ruta
+        return None
     return ruta if ruta.is_relative_to(base) else None
 
 
@@ -161,6 +188,19 @@ class Manejador(BaseHTTPRequestHandler):
         # Rechaza peticiones con otro Host (ataques de DNS rebinding desde páginas externas).
         puerto = self.server.server_address[1]
         return self.headers.get('Host') in (f'127.0.0.1:{puerto}', f'localhost:{puerto}')
+
+    def origen_valido(self):
+        # Rechaza POST enviados desde otras páginas (CSRF): el navegador manda Origin en esos casos.
+        puerto = self.server.server_address[1]
+        origen = self.headers.get('Origin')
+        return origen is None or origen in (f'http://127.0.0.1:{puerto}', f'http://localhost:{puerto}')
+
+    def descartar_cuerpo(self, largo):
+        # Se lee el cuerpo antes de responder: si se cierra con datos sin leer, el
+        # cliente recibe un reinicio de conexión en vez del mensaje.
+        restante = largo
+        while restante > 0 and (trozo := self.rfile.read(min(restante, 1 << 16))):
+            restante -= len(trozo)
 
     def responder_json(self, datos, estado=HTTPStatus.OK):
         cuerpo = json.dumps(datos, ensure_ascii=False).encode('utf-8')
@@ -311,12 +351,12 @@ class Manejador(BaseHTTPRequestHandler):
             self.responder_json({'error': 'Falta el tamaño del archivo (Content-Length).'},
                                 HTTPStatus.LENGTH_REQUIRED)
             return
+        if largo < 0:
+            self.responder_json({'error': 'Tamaño del archivo inválido (Content-Length).'},
+                                HTTPStatus.BAD_REQUEST)
+            return
         if largo > MAX_AUDIO:
-            # Se descarta el cuerpo antes de responder: si se cierra con datos sin leer, el
-            # cliente recibe un reinicio de conexión en vez del mensaje.
-            restante = largo
-            while restante > 0 and (trozo := self.rfile.read(min(restante, 1 << 16))):
-                restante -= len(trozo)
+            self.descartar_cuerpo(largo)
             self.responder_json({'error': 'El archivo supera 20 MB.'}, HTTPStatus.REQUEST_ENTITY_TOO_LARGE)
             return
         cuerpo = self.rfile.read(largo)
@@ -330,15 +370,26 @@ class Manejador(BaseHTTPRequestHandler):
         if not self.host_valido():
             self.send_error(HTTPStatus.FORBIDDEN)
             return
+        if not self.origen_valido():
+            valor = self.headers.get('Content-Length', '')
+            self.descartar_cuerpo(int(valor) if valor.isdigit() else 0)
+            self.responder_json({'error': 'Petición rechazada: viene de otra página.'}, HTTPStatus.FORBIDDEN)
+            return
         url = urlparse(self.path)
         if url.path == '/api/analizar':
             self.analizar_subido()
         elif url.path == '/api/correr':
             try:
                 largo = int(self.headers.get('Content-Length', 0))
+                if largo < 0:
+                    raise ValueError('Content-Length negativo')
                 ids = json.loads(self.rfile.read(largo) or b'{}').get('pasos') or []
             except (ValueError, AttributeError):
                 self.responder_json({'error': 'Cuerpo inválido.'}, HTTPStatus.BAD_REQUEST)
+                return
+            if self.headers.get_content_type() != 'application/json':
+                self.responder_json({'error': 'El cuerpo debe ser JSON (Content-Type: application/json).'},
+                                    HTTPStatus.BAD_REQUEST)
                 return
             if not isinstance(ids, list) or not ids or any(i not in POR_ID for i in ids):
                 self.responder_json({'error': 'Pasos desconocidos.'}, HTTPStatus.BAD_REQUEST)

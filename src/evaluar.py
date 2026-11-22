@@ -104,7 +104,7 @@ def evaluar_particion(dir_particion: Path, predictores: dict[str, Callable]) -> 
         metas = [json.loads(l) for l in f if l.strip()]
     glob = {n: _Acumulador() for n in predictores}
     tipo = {n: {} for n in predictores}
-    control = {n: [] for n in predictores}
+    sin_cambios = {n: {'monolingue': [], 'control': []} for n in predictores}  # frases sin cambio real
     cubos = {n: {c: [0, 0] for c in _CUBOS} for n in predictores}  # [aciertos, total]
     for meta in metas:
         y = cargar_audio(dir_particion / f'{meta["id"]}.wav')
@@ -116,8 +116,8 @@ def evaluar_particion(dir_particion: Path, predictores: dict[str, Callable]) -> 
             glob[nombre].agregar(ref, pred, cambios_ref, cambios_pred)
             tipo[nombre].setdefault(meta['tipo'], _Acumulador()).agregar(
                 ref, pred, cambios_ref, cambios_pred)
-            if meta['tipo'] == 'control':
-                control[nombre].append(cambios_pred)
+            if meta['tipo'] in sin_cambios[nombre]:
+                sin_cambios[nombre][meta['tipo']].append(cambios_pred)
             for fr in meta['fragmentos']:
                 a, b = int(round(fr['inicio'] * SR / HOP)), int(round(fr['fin'] * SR / HOP))
                 r, p = ref[a:b], pred[a:b]
@@ -131,7 +131,8 @@ def evaluar_particion(dir_particion: Path, predictores: dict[str, Callable]) -> 
             **glob[nombre].resultado(),
             'por_tipo': {t: a.resultado() for t, a in tipo[nombre].items()},
             'por_duracion': {c: ac / tot for c, (ac, tot) in cubos[nombre].items() if tot},
-            'falsos_cambios_control': tasa_falsos_cambios(control[nombre])}
+            'falsos_cambios_control': tasa_falsos_cambios(sin_cambios[nombre]['control']),
+            'falsos_cambios_monolingue': tasa_falsos_cambios(sin_cambios[nombre]['monolingue'])}
     return salida
 
 

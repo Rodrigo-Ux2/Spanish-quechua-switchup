@@ -60,6 +60,17 @@ def test_evaluar_particion_oraculo(corpus_falso):
     assert r['oraculo']['cambios']['f1'] > 0.9
 
 
+def test_falsos_cambios_monolingue(corpus_falso):
+    # oráculo: ninguna frase sin cambios recibe un cambio; partir cada frase en dos: todas lo reciben
+    validacion = corpus_falso / 'validacion'
+    def partir(y):
+        n = 1 + len(y) // 160
+        return np.where(np.arange(n) < n // 2, ES, QU)
+    r = evaluar_particion(validacion, {'oraculo': oraculo_de(validacion), 'partir': partir})
+    assert r['oraculo']['falsos_cambios_monolingue'] == 0.0
+    assert r['partir']['falsos_cambios_monolingue'] == 1.0 and r['partir']['falsos_cambios_control'] == 1.0
+
+
 def test_evaluar_reales_vacio(tmp_path):
     assert evaluar_reales(tmp_path / 'no_existe', {}) is None
     (tmp_path / 'vacia').mkdir()

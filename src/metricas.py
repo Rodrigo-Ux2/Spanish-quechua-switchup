@@ -50,7 +50,7 @@ def prf(vp, fp, fn):
 
 
 def tasa_falsos_cambios(predicciones):
-    """Fracción de frases de control con al menos un cambio predicho."""
+    """Fracción de frases sin cambio real (control o monolingües) con al menos un cambio predicho."""
     if not predicciones:
         return 0.0
     return sum(1 for c in predicciones if len(c) > 0) / len(predicciones)

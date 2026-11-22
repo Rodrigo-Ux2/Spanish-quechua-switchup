@@ -25,7 +25,7 @@ Partición de prueba (450 frases sintéticas con hablantes que no están en el e
 | No supervisado (K-means) | 53.1 % | 52.3 % | 17.5 % | 90.0 % |
 | Línea base (siempre español) | 49.4 % | 33.0 % | 0.0 % | 0.0 % |
 
-El no supervisado queda prácticamente al azar (ARI con el idioma 0.0035 sobre ventanas). Los
+El no supervisado queda prácticamente al azar (ARI con el idioma 0.0035 en las ventanas de prueba). Los
 resultados describen el corpus sintético, **no** el habla real de Cochabamba: el quechua es el de
 Puno (variedad Collao), cada unión entre idiomas es también un cambio de hablante, y no hubo
 grabaciones reales en esta corrida.
@@ -100,8 +100,9 @@ Tiempos medidos en la corrida de referencia (Intel Core Ultra 7 265U, solo CPU),
 | `evaluar.py` | 63 s |
 
 El entrenamiento profundo es el paso lento: cerca de 2.3 h en CPU (21 épocas con parada temprana, de
-unos 5 a 9 min cada una). Todo usa la semilla 2026: repetir la corrida da las mismas métricas; solo
-cambian los tiempos.
+unos 5 a 9 min cada una). Todo usa la semilla 2026, así que repetir la corrida debería dar métricas muy
+parecidas, aunque no necesariamente idénticas: las versiones de los paquetes no están fijadas y los
+cálculos en CPU pueden variar con el número de hilos. Los tiempos sí cambian.
 
 > El repositorio ya trae los modelos y los resultados de la corrida de referencia en `modelos/` y
 > `resultados/`, así que la aplicación funciona sin entrenar.
@@ -125,7 +126,9 @@ detenerla: `Ctrl+C`. Solo escucha en `127.0.0.1` y solo ejecuta los pasos de su 
 | **Probar** | Elige una frase de prueba, sube un audio (WAV, MP3, M4A, OGG o FLAC, entre 1 s y 5 min) o graba con el micrófono. Cada modelo dibuja su línea de tiempo con español, quechua, silencios y cambios. |
 
 El navegador decodifica cualquier audio y lo envía como WAV mono de 16 kHz. Un audio vacío, de menos
-de 1 s, de más de 5 min, sin habla o ilegible devuelve un mensaje claro en español.
+de 1 s, de más de 5 min, en silencio o ilegible devuelve un mensaje claro en español. La detección de
+habla es relativa a la trama más fuerte, así que un audio con solo ruido no se rechaza: se analiza
+igual y sus tramos no significan nada.
 
 > La grabación con micrófono desde la aplicación no se verificó con un micrófono real; la subida de
 > archivos y las frases de prueba sí.

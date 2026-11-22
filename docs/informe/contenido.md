@@ -191,6 +191,11 @@ hace en parte.
 
 Equipo: Intel Core Ultra 7 265U, 14 núcleos, solo CPU, sin GPU. Semilla global 2026.
 
+Casi todas las cifras de este informe salen de los archivos de `resultados/`. Las pocas que ningún
+script guarda (este equipo, los clips descartados por cortos, los picos de memoria y el chequeo de
+uniones y de saturación) son valores medidos en la corrida de referencia del 2026-11-22 y no se
+recalculan al repetir el pipeline.
+
 | Herramienta | Versión | Uso |
 |------------------|---------|---------|
 | Python | $python | Lenguaje de todo el pipeline |
@@ -304,7 +309,8 @@ $tabla_epocas
 Las ventanas de MFCC se estandarizan, se reducen con PCA (conservando el 95 % de la varianza) y se
 agrupan con K-means y con GMM de covarianza completa, ambos con k = 2. Las etiquetas de idioma, de
 género y de hablante no intervienen en el ajuste: solo se usan después para medir cuánto se alinean
-los grupos con cada una. Para elegir k se calculó la silueta de K-means entre 2 y 6 grupos.
+los grupos con cada una. Para elegir k se calculó la silueta de K-means entre 2 y 6 grupos, sobre
+una submuestra de 10 000 ventanas de entrenamiento.
 
 | k | Silueta |
 |---:|---:|
@@ -319,7 +325,7 @@ los grupos con cada una. Para elegir k se calculó la silueta de K-means entre 2
 El entrenamiento tardó $segundos_no_supervisado s. Con k = 2 se compararon los dos algoritmos sobre
 la partición de validación, y se eligió **$mejor_algoritmo**:
 
-| Algoritmo | Exactitud val. | F1 macro val. | ARI con idioma | ARI con género | ARI con hablante |
+| Algoritmo | Exactitud val. | F1 macro val. | ARI con idioma val. | ARI con género val. | ARI con hablante val. |
 |------------------|---------:|---------:|---------:|---------:|---------:|
 | K-means | $ns_val_exactitud_kmeans | $ns_val_f1_kmeans | $ari_idioma_kmeans | $ari_genero_kmeans | $ari_hablante_kmeans |
 | GMM | $ns_val_exactitud_gmm | $ns_val_f1_gmm | $ari_idioma_gmm | $ari_genero_gmm | $ari_hablante_gmm |
@@ -361,15 +367,16 @@ Por trama:
 
 Por punto de cambio (tolerancia de ±200 ms):
 
-| Modelo | Precisión | Exhaustividad | F1 de cambios | Falsos cambios en control |
-|------------------|---------:|---------:|---------:|---------:|
-| Profundo (CRNN) | ${prec_cambios_profundo} | ${exh_cambios_profundo} | ${f1_cambios_profundo} | ${falsos_control_profundo} |
-| No supervisado | ${prec_cambios_no_supervisado} | ${exh_cambios_no_supervisado} | ${f1_cambios_no_supervisado} | ${falsos_control_no_supervisado} |
-| Línea base | ${prec_cambios_linea_base} | ${exh_cambios_linea_base} | ${f1_cambios_linea_base} | ${falsos_control_linea_base} |
+| Modelo | Precisión | Exhaustividad | F1 de cambios | Falsos cambios en control | Falsos cambios en monolingües |
+|------------------|---------:|---------:|---------:|---------:|---------:|
+| Profundo (CRNN) | ${prec_cambios_profundo} | ${exh_cambios_profundo} | ${f1_cambios_profundo} | ${falsos_control_profundo} | ${falsos_mono_profundo} |
+| No supervisado | ${prec_cambios_no_supervisado} | ${exh_cambios_no_supervisado} | ${f1_cambios_no_supervisado} | ${falsos_control_no_supervisado} | ${falsos_mono_no_supervisado} |
+| Línea base | ${prec_cambios_linea_base} | ${exh_cambios_linea_base} | ${f1_cambios_linea_base} | ${falsos_control_linea_base} | ${falsos_mono_linea_base} |
 
-La línea base responde siempre español: su exactitud ronda el 50 % y su F1 de quechua es 0. Que su
-precisión de cambios sea alta y su exhaustividad nula es un efecto de la convención: nunca predice un
-cambio, así que no se equivoca en las frases sin cambio.
+La línea base responde siempre la clase mayoritaria del entrenamiento, que en la corrida de
+referencia es el español: su exactitud es $exactitud_linea_base y su F1 de quechua,
+$f1_qu_linea_base. Que su precisión de cambios sea alta y su exhaustividad nula es un efecto de la
+convención: nunca predice un cambio, así que no se equivoca en las frases sin cambio.
 
 ![Matriz de confusión del modelo profundo.](resultados/figuras/matriz_profundo.png){width=45%}
 
@@ -401,11 +408,12 @@ $conf_es_qu_profundo de español predicho como quechua.
 
 ### Modelo no supervisado en la prueba
 
-Por ventana ($n_ventanas ventanas de habla): ARI $ventanas_ari, NMI $ventanas_nmi, pureza
-$ventanas_pureza y silueta $ventanas_silueta. Los grupos **no se alinean con el idioma**: el
-resultado es prácticamente azar. Las MFCC por ventana no bastan para separar los idiomas sin
-supervisión. Se alinean un poco más con el hablante (ARI $ari_hablante_kmeans) que con el idioma
-(ARI $ari_idioma_kmeans), aunque ambos valores son cercanos a cero.
+En la prueba, por ventana ($n_ventanas ventanas de habla): ARI $ventanas_ari, NMI $ventanas_nmi y
+pureza $ventanas_pureza. La silueta con k = 2 ($ventanas_silueta) no es de la prueba: se mide en la
+submuestra de entrenamiento. En la corrida de referencia los grupos **no se alinean con el idioma**:
+el resultado es prácticamente azar. Las MFCC por ventana no bastan para separar los idiomas sin
+supervisión. En la validación se alinean un poco más con el hablante (ARI $ari_hablante_kmeans) que
+con el idioma (ARI $ari_idioma_kmeans), aunque ambos valores son cercanos a cero.
 
 ![Matriz de confusión del modelo no supervisado.](resultados/figuras/matriz_no_supervisado.png){width=45%}
 
@@ -422,14 +430,19 @@ $tabla_reales
 - El modelo profundo supera con margen a la línea base ($f1_profundo frente a $f1_linea_base de F1
   macro) y al no supervisado ($f1_no_supervisado).
 - Hay una brecha entre validación ($f1_val_mejor) y prueba ($f1_profundo): la prueba tiene otros
-  hablantes y solo $hablantes_qu_prueba de quechua.
-- El error dominante es quechua→español: el modelo tiende a llamar español al quechua.
-- Las frases mixtas son las más difíciles ($f1_mixta_profundo). Localizar el cambio es más difícil
-  que clasificar el idioma (F1 de cambios $f1_cambios_profundo).
-- El $falsos_control_profundo de las frases de control (un solo idioma, varios hablantes) recibe al
-  menos un cambio falso: el modelo reacciona en parte al cambio de hablante, que es justo el riesgo
-  descrito en la sección IV.
-- El agrupamiento sin etiquetas no encuentra la separación por idioma (ARI cercano a 0).
+  hablantes y solo $hablantes_qu_prueba de quechua. Además, la parada temprana eligió la época por
+  su F1 de validación, así que esa cifra está sesgada a favor de la validación.
+- El error dominante es $error_dominante: $conf_qu_es_profundo tramas de quechua predichas como
+  español frente a $conf_es_qu_profundo de español predichas como quechua.
+- En la corrida de referencia, las frases mixtas fueron las más difíciles ($f1_mixta_profundo, frente
+  a $f1_monolingue_profundo en las monolingües y $f1_control_profundo en las de control). Localizar
+  el cambio es más difícil que clasificar el idioma (F1 de cambios $f1_cambios_profundo).
+- El $falsos_control_profundo de las frases de control (un solo idioma, un hablante distinto en cada
+  tramo) recibe al menos un cambio falso, frente al $falsos_mono_profundo de las monolingües (un solo
+  idioma y un solo hablante, con las mismas uniones). La diferencia, $efecto_hablante, es la parte
+  atribuible al cambio de hablante, que es justo el riesgo descrito en la sección IV.
+- El agrupamiento sin etiquetas no encuentra la separación por idioma (ARI $ventanas_ari en las
+  ventanas de prueba).
 
 ## V.5 Prototipo: la aplicación web
 
@@ -460,8 +473,10 @@ y los cambios de idioma.
 
 ![Análisis de un audio MP3 subido.](resultados/figuras/app_probar_mp3.png){width=90%}
 
-Los audios inválidos (vacíos, de menos de 1 s, de más de 5 min, sin habla o ilegibles) devuelven un
-mensaje claro en español y nunca un traceback.
+Los audios inválidos (vacíos, de menos de 1 s, de más de 5 min, en silencio o ilegibles) devuelven un
+mensaje claro en español y nunca un traceback. La detección de habla es relativa a la trama más
+fuerte del audio: solo rechaza un audio sin ninguna trama con energía, así que un audio con solo
+ruido se analiza igual y sus tramos no significan nada.
 
 ![Mensaje de error ante un archivo que no se puede leer.](resultados/figuras/app_probar_error.png){width=90%}
 
@@ -473,7 +488,9 @@ mensaje claro en español y nunca un traceback.
    más cercano al de Cochabamba pero distinto. El español es el de México, no el boliviano.
 3. **Cambio de hablante en cada unión.** En las frases mixtas cada cambio de idioma es también un
    cambio de hablante. Las frases de control mitigan el riesgo pero no lo eliminan: el
-   $falsos_control_profundo de las frases de control recibe un cambio falso.
+   $falsos_control_profundo de las frases de control recibe un cambio falso, frente al
+   $falsos_mono_profundo de las monolingües; la diferencia ($efecto_hablante) se debe al cambio de
+   hablante.
 4. **Pocos hablantes de quechua.** Hay $hablantes_qu_validacion en validación y $hablantes_qu_prueba
    en prueba; las métricas por idioma no deben leerse con más precisión de la que tienen.
 5. **Sin evaluación en grabaciones reales.** No hubo grabaciones propias en esta corrida; el
@@ -494,9 +511,10 @@ mensaje claro en español y nunca un traceback.
 2. Marcar el punto exacto del cambio es más difícil que clasificar la trama: el F1 de cambios es
    $f1_cambios_profundo en toda la prueba y $f1_cambios_mixta_profundo en las frases mixtas.
 3. El modelo no es un detector de idioma puro: marca algún cambio falso en el $falsos_control_profundo
-   de las frases de un solo idioma con varios hablantes, y confunde más quechua con español que al
-   revés. El agrupamiento sin supervisión confirma que el idioma no emerge de las MFCC por ventana
-   (ARI $ari_idioma_kmeans).
+   de las frases de un solo idioma con varios hablantes, frente al $falsos_mono_profundo de las de un
+   solo hablante ($efecto_hablante de diferencia), y su error más frecuente es $error_dominante. El
+   agrupamiento sin supervisión confirma que el idioma no emerge de las MFCC por ventana (ARI con el
+   idioma de $ari_idioma_kmeans en validación y $ventanas_ari en las ventanas de prueba).
 4. Los resultados valen para el corpus sintético. Afirmar que el sistema funciona con el code-switching
    real de Cochabamba exige grabaciones reales etiquetadas, que quedan para una etapa posterior.
 5. Trabajo futuro: evaluar con grabaciones reales (la aplicación y `src/evaluar.py` ya admiten

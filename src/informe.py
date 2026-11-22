@@ -101,6 +101,7 @@ def valores(resultados: Path = RESULTADOS) -> dict[str, str]:
         v[f'exh_cambios_{m}'] = _pct(r['cambios']['exhaustividad'])
         v[f'f1_cambios_{m}'] = _pct(r['cambios']['f1'])
         v[f'falsos_control_{m}'] = _pct(r['falsos_cambios_control'])
+        v[f'falsos_mono_{m}'] = _pct(r['falsos_cambios_monolingue'])
         for t in TIPOS:
             v[f'f1_{t}_{m}'] = _pct(r['por_tipo'][t]['trama']['f1_macro'])
         v[f'f1_cambios_mixta_{m}'] = _pct(r['por_tipo']['mixta']['cambios']['f1'])
@@ -109,6 +110,12 @@ def valores(resultados: Path = RESULTADOS) -> dict[str, str]:
         (a, b), (c, d) = r['trama']['matriz']
         v.update({f'conf_es_es_{m}': _miles(a), f'conf_es_qu_{m}': _miles(b),
                   f'conf_qu_es_{m}': _miles(c), f'conf_qu_qu_{m}': _miles(d)})
+    profundo = prueba['profundo']
+    # Control y monolingüe tienen las mismas uniones; solo el control cambia de hablante.
+    efecto = profundo['falsos_cambios_control'] - profundo['falsos_cambios_monolingue']
+    v['efecto_hablante'] = f'{efecto * 100:.1f} puntos'
+    (_, es_qu), (qu_es, _) = profundo['trama']['matriz']
+    v['error_dominante'] = 'quechua→español' if qu_es > es_qu else 'español→quechua'
 
     for k, s in ns['silueta_por_k'].items():
         v[f'silueta_k{k}'] = f'{s:.4f}'

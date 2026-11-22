@@ -173,7 +173,7 @@ def main() -> None:
     p.add_argument('--horas-prueba', type=float, default=1)
     a = p.parse_args()
     if not (CLIPS / 'indice.csv').exists():
-        print('Primero corre la preparación de datos (src/preparar.py).')
+        print('Primero corre la preparación de datos (src/preparar.py).', file=sys.stderr)
         sys.exit(1)
     horas = {'entrenamiento': a.horas_entrenamiento, 'validacion': a.horas_validacion,
              'prueba': a.horas_prueba}

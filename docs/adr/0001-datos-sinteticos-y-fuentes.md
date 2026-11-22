@@ -31,8 +31,8 @@ Volúmenes finales de la corrida de referencia, medidos en `resultados/datos.jso
 - Quechua: entrenamiento 6.16 h y 61 hablantes; validación 1.14 h y 8; prueba 1.19 h y 8.
 - Síntesis: 177 s, pico de memoria de 3.7 GB y 2.1 GB en disco. Frases de entrenamiento: 4050 (2430 mixtas,
   810 monolingües y 810 de control), 8.73 h. Validación: 450 frases, 0.98 h. Prueba: 450 frases, 0.97 h.
-- Alrededor de 14 % de las tramas llevan la etiqueta IGNORAR. En entrenamiento, el español ocupa 47.7 % y el
-  quechua 38.1 % de las tramas.
+- Alrededor de 14 % de las tramas de entrenamiento llevan la etiqueta IGNORAR. En entrenamiento, el español ocupa 44.9 % y el
+  quechua 41.2 % de las tramas.
 
 Resolución R1 sobre el diseño de los archivos tar. Los tar de español traen
 `es-MX_female/{train,dev,test}.tsv` y no incluyen `validated.tsv`. El cargador lee la columna de locale y, cuando

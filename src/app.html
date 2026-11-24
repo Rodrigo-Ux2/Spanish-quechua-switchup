@@ -57,7 +57,9 @@ code { font-family: var(--mono); font-size: 0.9em; }
 
 /* ---- Armazón: riel pizarra + contenido ---- */
 .app { min-height: 100vh; display: grid; grid-template-columns: 248px minmax(0, 1fr); }
-.riel { background: var(--pizarra); color: var(--tiza); padding: 0 16px; }
+.riel { background: var(--pizarra); color: var(--tiza); padding: 0 16px; view-transition-name: riel; }
+::view-transition-old(root), ::view-transition-new(root) { animation-duration: 200ms; animation-timing-function: var(--ease-out); }
+::view-transition-group(riel) { animation: none; }
 .riel-dentro { position: sticky; top: 0; height: 100vh; padding: 28px 0 24px; display: flex; flex-direction: column; gap: 40px; }
 .marca { margin: 0; display: grid; grid-template-columns: auto 1fr; gap: 4px 12px; align-items: center; padding: 0 8px; }
 .marca svg { grid-row: span 2; width: 36px; height: 28px; }
@@ -117,7 +119,7 @@ p { max-width: 70ch; }
 .segmentos legend { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
 .segmentos label { position: relative; }
 .segmentos input { position: absolute; opacity: 0; inset: 0; margin: 0; cursor: pointer; }
-.segmentos span { display: block; padding: 7px 16px; border-radius: calc(var(--radio) - 2px); font-weight: 600; color: var(--tinta-2); transition: background-color 150ms ease, color 150ms ease; }
+.segmentos span { display: block; padding: 8px 16px; border-radius: calc(var(--radio) - 2px); font-weight: 600; color: var(--tinta-2); transition: background-color 150ms ease, color 150ms ease; }
 .segmentos label:hover span { color: var(--tinta); }
 .segmentos input:checked + span { background: var(--pizarra); color: #fff; }
 .segmentos input:focus-visible + span { outline: 2px solid var(--es); outline-offset: 2px; }
@@ -146,7 +148,7 @@ tr.total td, tr.total th { font-weight: 700; background: #f4f5f1; }
 td.txt { font-family: var(--texto); font-size: 16px; text-align: left; }
 
 /* ---- Datos ---- */
-.horas { display: grid; gap: 14px; margin-top: 40px; }
+.horas { display: grid; gap: 16px; margin-top: 40px; }
 .horas-fila { display: grid; grid-template-columns: 88px minmax(0, 1fr) 72px; align-items: center; gap: 16px; --c: var(--es); }
 .horas-fila.qu { --c: var(--qu); }
 .horas-nombre { font-weight: 700; }
@@ -243,7 +245,7 @@ kbd { display: inline-block; min-width: 22px; text-align: center; font: 600 13px
 .pista-nombre strong { display: block; font-size: 16px; font-weight: 700; color: var(--tinta); }
 .pista-nombre strong span { font-weight: 400; color: var(--tinta-2); }
 .pista-nombre > span { display: block; }
-.pista-nombre .ahora { display: inline-flex; align-items: center; gap: 8px; margin-top: 6px; color: var(--tinta); font-weight: 600; }
+.pista-nombre .ahora { display: inline-flex; align-items: center; gap: 8px; margin-top: 8px; color: var(--tinta); font-weight: 600; }
 .pista-nombre .ahora .muestra { width: 10px; height: 10px; }
 .guia { display: grid; grid-template-rows: 26px 26px; row-gap: 12px; font: 700 12px/26px var(--mono); text-align: center; }
 .guia .es { color: var(--es); }
@@ -277,7 +279,7 @@ summary { cursor: pointer; font-weight: 600; }
 /* ---- Entrenar ---- */
 .resumen-pasos { display: flex; flex-wrap: wrap; gap: 16px 32px; align-items: center; margin-bottom: 24px; }
 .riel-figura { margin: 32px 0 24px; padding: 0; background: none; border: 0; }
-.riel-figura figcaption { margin-top: 10px; }
+.riel-figura figcaption { margin-top: 8px; }
 .riel-pasos { list-style: none; margin: 0; padding: 0; display: flex; gap: 3px; height: 40px; }
 .riel-pasos li { position: relative; flex-basis: 0; min-width: 6px; background: var(--sin-habla); overflow: hidden; display: flex; align-items: center; justify-content: flex-start; }
 .riel-pasos li i { position: absolute; inset: 0; background: var(--m, var(--linea-fuerte)); transform-origin: left; transform: scaleX(var(--avance, 1)); transition: transform 900ms linear, background-color 200ms ease; }
@@ -290,15 +292,13 @@ summary { cursor: pointer; font-weight: 600; }
 .riel-pasos li[data-tono="mal"] span { color: #fff; }
 .riel-pasos li[data-tono="neutro"] { --m: transparent; }
 .riel-pasos li[data-tono="activo"] { --m: var(--es); }
-.riel-pasos li[data-tono="activo"]::after { content: ""; position: absolute; inset: 0; background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.45), transparent); transform: translateX(-100%); animation: barrido 1.8s ease-in-out infinite; }
-@keyframes barrido { to { transform: translateX(100%); } }
 .pasos { list-style: none; margin: 0; padding: 0; border: 1px solid var(--linea); border-radius: var(--radio); background: var(--superficie); }
 .paso { display: grid; grid-template-columns: 32px minmax(0, 1fr) auto auto; gap: 8px 16px; align-items: center; padding: 16px 20px; border-bottom: 1px solid var(--linea); transition: background-color 200ms ease; }
 .paso:last-child { border-bottom: 0; }
 .paso-n { font: 700 15px/1 var(--texto); color: var(--tinta-2); }
 .paso-nombre { font-weight: 700; }
 .paso-meta { font-size: 14px; color: var(--tinta-2); }
-.estado-paso { display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px 4px 8px; font-size: 14px; font-weight: 600; white-space: nowrap; color: var(--tinta-2); border: 1px solid var(--linea); border-radius: var(--radio); background: var(--papel); }
+.estado-paso { display: inline-flex; align-items: center; gap: 8px; padding: 4px 12px 4px 8px; font-size: 14px; font-weight: 600; white-space: nowrap; color: var(--tinta-2); border: 1px solid var(--linea); border-radius: var(--radio); background: var(--papel); }
 .estado-paso .icono { width: 16px; height: 16px; }
 .paso[data-tono="ok"] .estado-paso { color: var(--ok); background: var(--ok-fondo); border-color: #bcdcc8; }
 .paso[data-tono="mal"] .estado-paso { color: var(--error); background: var(--error-fondo); border-color: #eec7bf; }
@@ -338,7 +338,7 @@ figcaption { font-size: 14px; color: var(--tinta-2); margin-top: 8px; }
   .estado-global { margin: 0 8px; }
   main { padding: 32px 16px 64px; }
   .pista { grid-template-columns: 24px minmax(0, 1fr); column-gap: 8px; row-gap: 8px; }
-  .pista-nombre { grid-column: 1 / -1; }
+  .pista-nombre { grid-column: 1 / -1; position: relative; z-index: 3; background: var(--superficie); padding-bottom: 4px; }
   .pista-nombre:empty { display: none; }
   .transporte .atajos { display: none; }
   .paso { grid-template-columns: 28px minmax(0, 1fr); }
@@ -351,7 +351,6 @@ figcaption { font-size: 14px; color: var(--tinta-2); margin-top: 8px; }
   .boton, .frases button { transition: background-color 150ms ease; }
   .boton:active:not(:disabled), .frases button:active { transform: none; }
   .progreso div, .riel-pasos li i { transition: none; }
-  .riel-pasos li[data-tono="activo"]::after { animation: none; }
 }
 </style>
 </head>
@@ -580,7 +579,11 @@ function ir(vista) {
     ({ datos: cargarDatos, resultados: cargarResultados, probar: () => cargarFrases(), entrenar: () => {} })[vista]();
   }
 }
-window.addEventListener('hashchange', () => { ir(location.hash.slice(1)); $('contenido').focus({ preventScroll: true }); });
+window.addEventListener('hashchange', () => {
+  const cambiar = () => { ir(location.hash.slice(1)); $('contenido').focus({ preventScroll: true }); };
+  if (document.startViewTransition && !matchMedia('(prefers-reduced-motion: reduce)').matches) document.startViewTransition(cambiar);
+  else cambiar();
+});
 
 function pintarEstadoGlobal() {
   const el = $('estado-global');

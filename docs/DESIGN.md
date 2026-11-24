@@ -25,6 +25,15 @@ colors:
   ok-fondo: "#e8f3ec"
   error: "#a3301f"
   error-fondo: "#fbedea"
+  ok-borde: "#bcdcc8"
+  error-borde: "#eec7bf"
+  espanol-borde: "#a9cbe3"
+  fila-total: "#f4f5f1"
+  riel-ok: "#7fd0a4"
+  riel-mal: "#ff9d8a"
+  registro-barra: "#56707a"
+  registro-ok: "#8fd3ad"
+  registro-mal: "#ffab9c"
 typography:
   display:
     fontFamily: "Atkinson Hyperlegible Next, system-ui, sans-serif"
@@ -49,11 +58,36 @@ typography:
     fontWeight: 400
     lineHeight: 1.55
     fontFeature: "tnum"
+  intro:
+    fontFamily: "Atkinson Hyperlegible Next, system-ui, sans-serif"
+    fontSize: "18px"
+    fontWeight: 400
+    lineHeight: 1.55
+  nav:
+    fontFamily: "Atkinson Hyperlegible Next, system-ui, sans-serif"
+    fontSize: "17px"
+    fontWeight: 500
+    lineHeight: 1.2
+  control-small:
+    fontFamily: "Atkinson Hyperlegible Next, system-ui, sans-serif"
+    fontSize: "15px"
+    fontWeight: 600
+    lineHeight: 1.2
   label:
     fontFamily: "Atkinson Hyperlegible Next, system-ui, sans-serif"
     fontSize: "14px"
     fontWeight: 600
     lineHeight: 1.35
+  caption:
+    fontFamily: "Atkinson Hyperlegible Next, system-ui, sans-serif"
+    fontSize: "13px"
+    fontWeight: 400
+    lineHeight: 1.45
+  record-clock:
+    fontFamily: "Atkinson Hyperlegible Mono, ui-monospace, monospace"
+    fontSize: "1.75rem"
+    fontWeight: 600
+    lineHeight: 1.2
   timecode:
     fontFamily: "Atkinson Hyperlegible Mono, ui-monospace, monospace"
     fontSize: "2rem"
@@ -141,6 +175,8 @@ Neutros fríos de papel y pizarra, con los dos colores de idioma Okabe-Ito como 
 - **Sin habla** (#eceeea): carril vacío y fondo de barras.
 - **Pizarra** (#2a3b40), **Pizarra activa** (#375056), **Tiza** (#ecf1ef), **Tiza tenue** (#afc0be): riel de navegación, segmento elegido, registro de la corrida.
 - **Modelos**: tinta para el profundo, #6f8890 para el no supervisado, #b4bcbf para la línea base, siempre con su nombre en la cabecera.
+- **Bordes de estado** (#bcdcc8, #eec7bf, #a9cbe3): borde de los sellos hecho, fallido y en curso. **Fila total** (#f4f5f1): filas de totales en tablas.
+- **Sobre pizarra** (#7fd0a4, #ff9d8a, #56707a, #8fd3ad, #ffab9c): punto de estado del riel (listo o con fallas) y, en el registro, barra de desplazamiento, líneas correctas y líneas con error.
 
 ### Named Rules
 **La regla del idioma con nombre.** El azul y el ámbar nunca aparecen solos: cada uso lleva la etiqueta ES/QU o el nombre del idioma al lado.

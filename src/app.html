@@ -146,54 +146,94 @@ tr.total td, tr.total th { font-weight: 700; background: #f4f5f1; }
 td.txt { font-family: var(--texto); font-size: 16px; text-align: left; }
 
 /* ---- Probar ---- */
-.fuente { display: grid; gap: 16px; padding: 24px; background: var(--superficie); border: 1px solid var(--linea); border-radius: var(--radio); }
-.frases { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 8px; }
-.frases button { width: 100%; display: flex; justify-content: space-between; gap: 8px; padding: 8px 12px; border: 1px solid var(--linea); border-radius: var(--radio); background: var(--papel); font: inherit; font-size: 14px; cursor: pointer; color: var(--tinta); transition: transform 160ms var(--ease-out), border-color 150ms ease; }
-.frases button:hover { border-color: var(--tinta-2); }
+.fuente { display: grid; gap: 20px; padding: 24px; background: var(--superficie); border: 1px solid var(--linea); border-radius: var(--radio); }
+.fuente-cab { display: flex; flex-wrap: wrap; gap: 12px 24px; align-items: center; justify-content: space-between; }
+.atajos { margin: 0; font-size: 14px; color: var(--tinta-2); display: flex; flex-wrap: wrap; gap: 4px 16px; }
+kbd { display: inline-block; min-width: 22px; text-align: center; font: 600 13px/1 var(--mono); padding: 4px 6px 3px; border: 1px solid var(--linea-fuerte); border-bottom-width: 2px; border-radius: var(--radio); background: var(--papel); color: var(--tinta); }
+.frases { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(128px, 1fr)); gap: 8px; }
+.frases button {
+  width: 100%; display: grid; grid-template-columns: 1fr auto; align-items: baseline; gap: 8px; padding: 10px 12px 12px;
+  border: 1px solid var(--linea); border-radius: var(--radio); background: var(--papel); color: var(--tinta);
+  font: inherit; font-size: 15px; text-align: left; cursor: pointer;
+  transition: transform 160ms var(--ease-out), border-color 150ms ease, background-color 150ms ease, color 150ms ease;
+}
+.frases .id { font-family: var(--mono); font-weight: 600; }
+.frases .dur { font: 13px var(--mono); color: var(--tinta-2); }
+.frases .largo { grid-column: 1 / -1; height: 3px; background: var(--linea); }
+.frases .largo i { display: block; height: 100%; width: calc(var(--d) * 100%); background: var(--tinta-3); transition: background-color 150ms ease; }
+.frases button:hover { border-color: var(--tinta-3); background: var(--superficie); }
 .frases button:active { transform: scale(0.97); }
-.frases button[aria-pressed="true"] { border-color: var(--tinta); background: var(--superficie); box-shadow: inset 0 0 0 1px var(--tinta); }
-.frases .dur { color: var(--tinta-2); font-variant-numeric: tabular-nums; }
-.soltar { display: grid; place-items: center; gap: 8px; text-align: center; padding: 32px 16px; border: 1px dashed #aab2ad; border-radius: var(--radio); background: var(--papel); transition: border-color 150ms ease, background-color 150ms ease; }
-.soltar.encima { border-color: var(--tinta); background: #eaece8; }
+.frases button[aria-pressed="true"] { border-color: var(--pizarra); background: var(--pizarra); color: #fff; }
+.frases button[aria-pressed="true"] .dur { color: var(--tiza-tenue); }
+.frases button[aria-pressed="true"] .largo { background: #4f666c; }
+.frases button[aria-pressed="true"] .largo i { background: var(--tiza); }
+.soltar { display: grid; place-items: center; gap: 8px; text-align: center; padding: 40px 16px; border: 1px dashed var(--linea-fuerte); border-radius: var(--radio); background: var(--papel); transition: border-color 150ms ease, background-color 150ms ease; }
+.soltar.encima { border-color: var(--es); background: var(--es-suave); }
 .soltar p { margin: 0; }
 .grabador { display: flex; flex-wrap: wrap; align-items: center; gap: 16px; }
-.reloj-grab { font-family: var(--mono); font-variant-numeric: tabular-nums; font-size: 1.5rem; }
+.reloj-grab { font-family: var(--mono); font-variant-numeric: tabular-nums; font-size: 1.75rem; font-weight: 600; }
 
-.resultado { margin-top: 32px; display: grid; gap: 16px; }
+.analizando { min-height: 24px; margin: 20px 0 0; color: var(--tinta-2); display: flex; align-items: center; gap: 10px; }
+.analizando:not(:empty)::before { content: ""; width: 14px; height: 14px; border-radius: 50%; border: 2px solid var(--linea); border-top-color: var(--es); animation: girar 700ms linear infinite; }
+@keyframes girar { to { transform: rotate(360deg); } }
+.vacio { margin-top: 24px; display: flex; align-items: center; gap: 16px; padding: 20px 24px; border: 1px dashed var(--linea-fuerte); border-radius: var(--radio); color: var(--tinta-2); }
+.vacio svg { width: 48px; height: 36px; flex: none; }
+.vacio p { margin: 0; }
+
+.resultado { margin-top: 20px; display: grid; gap: 16px; transition: opacity 200ms ease; }
+.resultado.cargando { opacity: 0.45; }
 .resultado-cab { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: 8px 24px; }
 .resultado-cab h2 { margin: 0; }
-audio { width: 100%; height: 40px; }
 .leyenda { display: flex; flex-wrap: wrap; gap: 8px 20px; margin: 0; padding: 0; list-style: none; font-size: 14px; color: var(--tinta-2); }
 .leyenda li { display: inline-flex; align-items: center; gap: 8px; }
 .muestra { width: 14px; height: 14px; flex: none; }
 .muestra.es { background: var(--es); }
 .muestra.qu { background: var(--qu); }
-.muestra.nada { background: var(--sin-habla); box-shadow: inset 0 0 0 1px #c3c9c4; }
-.muestra.marca-cambio { width: 3px; height: 16px; border-radius: 0; background: var(--tinta); }
+.muestra.nada { background: var(--sin-habla); box-shadow: inset 0 0 0 1px var(--linea-fuerte); }
+.muestra.marca-cambio { width: 10px; height: 10px; border-radius: 50%; background: var(--superficie); box-shadow: 0 0 0 2px var(--tinta); margin: 0 2px; }
 
-.pistas { display: grid; gap: 12px; padding: 20px 24px; background: var(--superficie); border: 1px solid var(--linea); border-radius: var(--radio); }
-.pista { display: grid; grid-template-columns: 208px minmax(0, 1fr); gap: 16px; align-items: center; }
-.pista-nombre { font-size: 14px; line-height: 1.3; }
-.pista-nombre strong, .pista-nombre > span { display: block; }
-.pista-nombre strong { font-weight: 600; font-size: 15px; }
-.pista-nombre .ahora { display: inline-flex; align-items: center; gap: 8px; margin-top: 4px; color: var(--tinta-2); font-variant-numeric: tabular-nums; }
+.tablero { position: relative; display: grid; gap: 24px; padding: 24px; background: var(--superficie); border: 1px solid var(--linea); border-radius: var(--radio); }
+.transporte { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 20px; }
+.transporte .boton { width: 48px; height: 48px; padding: 0; }
+.reloj { font: 600 2rem/1 var(--mono); font-variant-numeric: tabular-nums; letter-spacing: -0.02em; }
+.reloj .total { color: var(--tinta-3); font-weight: 400; }
+.transporte .atajos { margin-left: auto; }
+.pistas { position: relative; display: grid; gap: 20px; }
+.pista { display: grid; grid-template-columns: 200px 28px minmax(0, 1fr); column-gap: 12px; align-items: center; }
+.pista-nombre { font-size: 14px; line-height: 1.35; color: var(--tinta-2); }
+.pista-nombre strong { display: block; font-size: 16px; font-weight: 700; color: var(--tinta); }
+.pista-nombre strong span { font-weight: 400; color: var(--tinta-2); }
+.pista-nombre > span { display: block; }
+.pista-nombre .ahora { display: inline-flex; align-items: center; gap: 8px; margin-top: 6px; color: var(--tinta); font-weight: 600; }
 .pista-nombre .ahora .muestra { width: 10px; height: 10px; }
-.barra { position: relative; height: 40px; background: var(--sin-habla); cursor: pointer; }
-.barra.revelar { animation: revelar 380ms var(--ease-out) both; animation-delay: calc(var(--i, 0) * 60ms); }
+.guia { display: grid; grid-template-rows: 26px 26px; row-gap: 12px; font: 700 12px/26px var(--mono); text-align: center; }
+.guia .es { color: var(--es); }
+.guia .qu { color: #8a5d00; }
+.carriles { position: relative; height: 64px; cursor: pointer; touch-action: none; background: linear-gradient(var(--sin-habla) 0 26px, transparent 26px 38px, var(--sin-habla) 38px 64px); }
+.carriles.revelar { animation: revelar 420ms var(--ease-out) both; animation-delay: calc(var(--i, 0) * 70ms); }
 @keyframes revelar { from { clip-path: inset(-8px 100% -8px 0); } to { clip-path: inset(-8px -8px -8px -8px); } }
-.tramo { position: absolute; top: 0; bottom: 0; display: flex; align-items: center; padding-left: 6px; font-size: 12px; font-weight: 600; letter-spacing: 0.02em; overflow: hidden; white-space: nowrap; }
-.tramo.es { background: var(--es); color: #fff; }
-.tramo.qu { background: var(--qu); color: var(--tinta); }
-.tramo + .tramo { box-shadow: inset 1px 0 rgba(255, 255, 255, 0.55); }
-.cambio { position: absolute; top: 0; bottom: 0; width: 2px; margin-left: -1px; background: var(--tinta); }
-.cambio::before { content: ""; position: absolute; top: 0; left: -4px; border: 5px solid transparent; border-top-color: var(--tinta); border-bottom: 0; }
-.cabezal { position: absolute; top: -6px; bottom: -6px; left: 0; width: 3px; margin-left: -1.5px; background: var(--tinta); box-shadow: 0 0 0 1px #fff; pointer-events: none; will-change: transform; }
-.eje { position: relative; height: 20px; font-size: 12px; color: var(--tinta-2); font-variant-numeric: tabular-nums; }
+.tramo { position: absolute; height: 26px; display: flex; align-items: center; padding-left: 6px; font: 700 12px/1 var(--mono); overflow: hidden; white-space: nowrap; transition: box-shadow 120ms ease; }
+.tramo.es { top: 0; background: var(--es); color: #fff; }
+.tramo.qu { bottom: 0; background: var(--qu); color: var(--tinta); }
+.tramo:hover { box-shadow: inset 0 0 0 2px var(--tinta); }
+.cambio { position: absolute; top: 0; bottom: 0; width: 2px; margin-left: -1px; background: var(--tinta); pointer-events: none; }
+.cambio::after { content: ""; position: absolute; left: 50%; top: 50%; width: 10px; height: 10px; transform: translate(-50%, -50%); border-radius: 50%; background: var(--superficie); box-shadow: 0 0 0 2px var(--tinta); }
+.onda { position: relative; height: 56px; cursor: pointer; touch-action: none; }
+.onda canvas { position: absolute; inset: 0; width: 100%; height: 100%; }
+.onda .jugado { clip-path: inset(0 calc(100% - var(--p, 0%)) 0 0); }
+.onda:focus-visible { outline-offset: 6px; }
+.cabezal { position: absolute; top: 0; left: 0; width: 2px; margin-left: -1px; background: var(--tinta); pointer-events: none; will-change: transform; z-index: 2; }
+.cabezal::before { content: ""; position: absolute; top: -7px; left: -5px; border: 6px solid transparent; border-top-color: var(--tinta); border-bottom: 0; }
+.eje { position: relative; height: 20px; font: 12px var(--mono); color: var(--tinta-3); font-variant-numeric: tabular-nums; }
 .eje span { position: absolute; top: 2px; transform: translateX(-50%); white-space: nowrap; }
 .eje span:first-child { transform: none; }
+.globo { position: absolute; z-index: 3; left: 0; top: 0; pointer-events: none; padding: 8px 12px; background: var(--tinta); color: #fff; border-radius: var(--radio); font-size: 14px; line-height: 1.4; white-space: nowrap; transform: translate(-50%, calc(-100% - 12px)); opacity: 0; transition: opacity 120ms ease; box-shadow: 0 4px 14px rgba(27, 33, 41, 0.18); }
+.globo.visible { opacity: 1; }
+.globo strong { display: block; }
+.globo span { color: var(--tiza-tenue); font-family: var(--mono); font-size: 13px; }
 details { border-top: 1px solid var(--linea); padding-top: 12px; }
-summary { cursor: pointer; font-weight: 500; }
-.tablas-tramos { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; margin-top: 16px; }
+summary { cursor: pointer; font-weight: 600; }
+.tablas-tramos { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px; margin-top: 16px; }
 
 /* ---- Entrenar ---- */
 .resumen-pasos { display: flex; flex-wrap: wrap; gap: 16px 32px; align-items: center; margin-bottom: 24px; }
@@ -241,13 +281,17 @@ figcaption { font-size: 14px; color: var(--tinta-2); margin-top: 8px; }
   .nav a { padding: 8px 10px 8px 8px; font-size: 16px; }
   .estado-global { margin: 0 8px; }
   main { padding: 32px 16px 64px; }
-  .pista { grid-template-columns: minmax(0, 1fr); gap: 6px; }
+  .pista { grid-template-columns: 24px minmax(0, 1fr); column-gap: 8px; row-gap: 8px; }
+  .pista-nombre { grid-column: 1 / -1; }
+  .pista-nombre:empty { display: none; }
+  .transporte .atajos { display: none; }
   .paso { grid-template-columns: 28px minmax(0, 1fr); }
   .paso > .estado-paso, .paso > .boton { grid-column: 2; justify-self: start; }
-  .fuente, .pistas { padding: 16px; }
+  .fuente, .tablero { padding: 16px; }
 }
 @media (prefers-reduced-motion: reduce) {
-  .barra.revelar { animation: none; }
+  .carriles.revelar { animation: none; }
+  .analizando:not(:empty)::before { animation-duration: 2s; }
   .boton, .frases button { transition: background-color 150ms ease; }
   .boton:active:not(:disabled), .frases button:active { transform: none; }
   .progreso div { transition: none; }
@@ -263,6 +307,7 @@ figcaption { font-size: 14px; color: var(--tinta-2); margin-top: 8px; }
   <symbol id="i-mal" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7.5v5.5m0 3.2v.3"/></symbol>
   <symbol id="i-reloj" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></symbol>
   <symbol id="i-correr" viewBox="0 0 24 24"><path d="M8 5.5v13l10-6.5z"/></symbol>
+  <symbol id="i-pausa" viewBox="0 0 24 24"><path d="M9 5.5v13M15 5.5v13"/></symbol>
 </svg>
 <a class="saltar" href="#contenido">Saltar al contenido</a>
 <div class="app">
@@ -341,12 +386,15 @@ figcaption { font-size: 14px; color: var(--tinta-2); margin-top: 8px; }
         </fieldset>
 
         <div id="panel-frase" style="display:grid;gap:16px">
-          <fieldset class="segmentos" id="tipo-frase">
-            <legend>Tipo de frase</legend>
-            <label><input type="radio" name="tipo" value="mixta" checked><span>Mixtas</span></label>
-            <label><input type="radio" name="tipo" value="monolingue"><span>Monolingües</span></label>
-            <label><input type="radio" name="tipo" value="control"><span>Control</span></label>
-          </fieldset>
+          <div class="fuente-cab">
+            <fieldset class="segmentos" id="tipo-frase">
+              <legend>Tipo de frase</legend>
+              <label><input type="radio" name="tipo" value="mixta" checked><span>Mixtas</span></label>
+              <label><input type="radio" name="tipo" value="monolingue"><span>Monolingües</span></label>
+              <label><input type="radio" name="tipo" value="control"><span>Control</span></label>
+            </fieldset>
+            <p class="atajos"><span><kbd>J</kbd> <kbd>K</kbd> frase anterior o siguiente</span></p>
+          </div>
           <ul class="frases" id="frases" aria-label="Frases de prueba"></ul>
         </div>
 
@@ -369,8 +417,12 @@ figcaption { font-size: 14px; color: var(--tinta-2); margin-top: 8px; }
         </div>
       </div>
 
-      <p class="tenue" id="analizando" aria-live="polite" style="margin:24px 0 0"></p>
+      <p class="analizando" id="analizando" aria-live="polite"></p>
       <div id="error-probar" role="alert"></div>
+      <div class="vacio" id="vacio">
+        <svg viewBox="0 0 36 28" aria-hidden="true"><rect x="0" y="2" width="16" height="9" fill="#0072b2"/><path d="M17 6.5v15" stroke="#1b2129" stroke-width="2"/><rect x="18" y="17" width="18" height="9" fill="#e69f00"/></svg>
+        <p>Elige una frase, sube un audio o graba. Verás la verdad y los dos modelos sobre los mismos carriles: español arriba, quechua abajo, y cada cambio de idioma como un escalón.</p>
+      </div>
 
       <div class="resultado" id="resultado" hidden>
         <div class="resultado-cab">
@@ -382,8 +434,16 @@ figcaption { font-size: 14px; color: var(--tinta-2); margin-top: 8px; }
             <li><span class="muestra marca-cambio"></span>Cambio de idioma</li>
           </ul>
         </div>
-        <audio id="reproductor" controls preload="auto"></audio>
-        <div class="pistas" id="pistas"></div>
+        <div class="tablero" id="tablero">
+          <div class="transporte">
+            <button class="boton principal" id="reproducir" type="button" aria-label="Reproducir"><svg class="icono" aria-hidden="true"><use href="#i-correr"/></svg></button>
+            <p class="reloj" style="margin:0"><span id="reloj-actual">0:00,0</span> <span class="total">/ <span id="reloj-total">0:00,0</span></span></p>
+            <p class="atajos"><span><kbd>Espacio</kbd> reproduce o pausa</span><span><kbd>←</kbd> <kbd>→</kbd> sobre la onda: medio segundo</span></p>
+          </div>
+          <div class="pistas" id="pistas"></div>
+          <div class="globo" id="globo" aria-hidden="true"></div>
+        </div>
+        <audio id="reproductor" preload="auto"></audio>
         <details>
           <summary>Ver los tramos como tabla</summary>
           <div class="tablas-tramos" id="tablas-tramos"></div>
@@ -632,6 +692,7 @@ async function finalizar(e) {
   estado = await pedir('/api/estado');
   for (const [id, p] of pasosUI) if (p.estado === 'pendiente' || p.estado === 'espera') marcarPaso(id, 'pendiente');
   cargadas.clear();  // datos, resultados y frases pueden haber cambiado
+  analisisFrases.clear();
   cargadas.add(location.hash.slice(1) || 'probar');
   pintarAvisosProbar();
   pintarEstadoGlobal();
@@ -761,7 +822,8 @@ async function cargarFrases(marcada) {
   const lista = $('frases');
   try {
     const frases = await pedir(`/api/frases?tipo=${tipo}`);
-    lista.innerHTML = frases.map((f) => `<li><button type="button" data-id="${esc(f.id)}" aria-pressed="${f.id === marcada}"><span>${esc(f.id.replace('pru_', ''))}</span><span class="dur">${segundos(f.duracion)}</span></button></li>`).join('');
+    const mayor = Math.max(...frases.map((f) => f.duracion), 1);
+    lista.innerHTML = frases.map((f) => `<li><button type="button" data-id="${esc(f.id)}" aria-pressed="${f.id === marcada}"><span class="id">${esc(f.id.replace('pru_', ''))}</span><span class="dur">${segundos(f.duracion)}</span><span class="largo" aria-hidden="true"><i style="--d:${(f.duracion / mayor).toFixed(3)}"></i></span></button></li>`).join('');
   } catch (e) {
     lista.innerHTML = `<li>${aviso(e.estado === 409 ? `${esc(e.message)}` : esc(e.message), 'error')}</li>`;
   }
@@ -777,23 +839,49 @@ function empezar(texto) {
   const mio = ++turno;
   $('error-probar').innerHTML = '';
   $('analizando').textContent = texto;
+  $('resultado').classList.toggle('cargando', Boolean(texto));
   return mio;
 }
 function fallar(mio, mensaje, que = '') {
   if (mio !== turno) return;
   $('analizando').textContent = '';
+  $('resultado').classList.remove('cargando');
   $('resultado').hidden = true;  // el resultado anterior no debe parecer el de este audio
   $('reproductor').pause();
   $('error-probar').innerHTML = `<div class="aviso error" style="margin-top:16px"><svg class="icono" aria-hidden="true"><use href="#i-mal"/></svg><p><strong>No se pudo analizar${que ? ' ' + esc(que) : ''}</strong>${esc(mensaje)}</p></div>`;
 }
 
+// Análisis de frases ya pedidos (o en curso): la siguiente frase de la lista se pide por adelantado,
+// así que pasar de frase con K durante la defensa es instantáneo. Se vacía al terminar una corrida.
+const analisisFrases = new Map();
+function pedirFrase(id) {
+  if (!analisisFrases.has(id)) {
+    const promesa = pedir(`/api/frase/${encodeURIComponent(id)}`);
+    analisisFrases.set(id, promesa);
+    promesa.catch(() => analisisFrases.delete(id));  // un fallo no queda guardado: se reintenta al volver
+  }
+  return analisisFrases.get(id);
+}
+const botonesFrase = () => [...$('frases').querySelectorAll('button[data-id]')];
 async function analizarFrase(id) {
-  const mio = empezar(`Analizando la frase ${id}…`);
+  const mio = empezar(analisisFrases.has(id) ? '' : `Analizando la frase ${id}…`);
   try {
-    const datos = await pedir(`/api/frase/${encodeURIComponent(id)}`);
+    const datos = await pedirFrase(id);
     if (mio !== turno) return;
     mostrar(datos, `/audio/prueba/${encodeURIComponent(id)}.wav`, `Frase ${id}`);
+    const botones = botonesFrase();
+    const siguiente = botones[botones.findIndex((b) => b.dataset.id === id) + 1];
+    if (siguiente) pedirFrase(siguiente.dataset.id).catch(() => {});  // el error se ve si la eligen
   } catch (e) { fallar(mio, e.message, `la frase ${id}`); }
+}
+function saltarFrase(delta) {
+  const botones = botonesFrase();
+  if (!botones.length) return;
+  const i = botones.findIndex((b) => b.getAttribute('aria-pressed') === 'true');
+  const b = botones[i === -1 ? 0 : Math.max(0, Math.min(botones.length - 1, i + delta))];
+  if (b.getAttribute('aria-pressed') === 'true') return;
+  b.click();
+  b.scrollIntoView({ block: 'nearest' });
 }
 
 function codificarWav(muestras, sr) {
@@ -905,7 +993,7 @@ $('grabar').addEventListener('click', async () => {
   pintarGrabar(true);
 });
 
-/* Líneas de tiempo */
+/* Líneas de tiempo: un carril por idioma (español arriba, quechua abajo); cada cambio es un escalón */
 // Paso de las marcas del eje: el menor que deja al menos 56 px entre etiquetas.
 function pasoEje(d, ancho) {
   const maximo = Math.max(2, Math.floor(ancho / 56));
@@ -915,64 +1003,139 @@ function idiomaEn(tramos, t) {
   const tr = tramos.find((x) => x.inicio <= t && t < x.fin);
   return tr ? tr.idioma : null;
 }
-function pista(nombre, detalle, modelo, dur, i) {
+const reloj = (t) => `${Math.floor(t / 60)}:${(t % 60).toFixed(1).padStart(4, '0').replace('.', ',')}`;
+const porciento = (x) => `${Math.round(100 * x)} %`;
+// Segundos de un tramo que la verdad marca con el mismo idioma.
+function coincidencia(tramo, verdad) {
+  return verdad.filter((v) => v.idioma === tramo.idioma)
+    .reduce((s, v) => s + Math.max(0, Math.min(tramo.fin, v.fin) - Math.max(tramo.inicio, v.inicio)), 0);
+}
+function pista(nombre, detalle, modelo, dur, i, verdad) {
   const pct = (t) => `${(100 * t / dur).toFixed(3)}%`;
   const el = document.createElement('div');
   el.className = 'pista';
-  const resumen = `${modelo.tramos.length} ${modelo.tramos.length === 1 ? 'tramo' : 'tramos'} · ${modelo.cambios.length} ${modelo.cambios.length === 1 ? 'cambio' : 'cambios'}`;
+  let resumen = `${modelo.tramos.length} ${modelo.tramos.length === 1 ? 'tramo' : 'tramos'} · ${modelo.cambios.length} ${modelo.cambios.length === 1 ? 'cambio' : 'cambios'}`;
+  const hablaVerdad = verdad ? verdad.reduce((s, v) => s + v.fin - v.inicio, 0) : 0;
+  if (hablaVerdad > 0) resumen += ` · coincide en el ${porciento(modelo.tramos.reduce((s, t) => s + coincidencia(t, verdad), 0) / hablaVerdad)} del habla`;
   el.innerHTML = `
-    <div class="pista-nombre"><strong>${esc(nombre)} <span class="tenue" style="font-weight:400">· ${esc(detalle)}</span></strong><span class="tenue">${resumen}</span>
+    <div class="pista-nombre"><strong>${esc(nombre)} <span>· ${esc(detalle)}</span></strong><span>${resumen}</span>
       <span class="ahora"><span class="muestra nada"></span><span>Sin habla</span></span></div>
-    <div class="barra revelar" style="--i:${i}" role="img" aria-label="${esc(nombre)}: ${resumen}. Detalle en la tabla de tramos.">
-      ${modelo.tramos.map((t) => `<div class="tramo ${t.idioma}" style="left:${pct(t.inicio)};width:${pct(t.fin - t.inicio)}">${t.idioma.toUpperCase()}</div>`).join('')}
+    <div class="guia" aria-hidden="true"><span class="es">ES</span><span class="qu">QU</span></div>
+    <div class="carriles revelar" style="--i:${i}" role="img" aria-label="${esc(nombre)}: ${resumen}. Detalle en la tabla de tramos.">
+      ${modelo.tramos.map((t, j) => `<div class="tramo ${t.idioma}" data-j="${j}" style="left:${pct(t.inicio)};width:${pct(t.fin - t.inicio)}">${t.idioma.toUpperCase()}</div>`).join('')}
       ${modelo.cambios.map((c) => `<div class="cambio" style="left:${pct(c)}"></div>`).join('')}
-      <div class="cabezal"></div>
     </div>`;
-  el.querySelector('.barra').addEventListener('click', (ev) => {
-    const r = ev.currentTarget.getBoundingClientRect();
-    const reproductor = $('reproductor');
-    reproductor.currentTime = Math.max(0, Math.min(1, (ev.clientX - r.left) / r.width)) * dur;
-  });
-  return { el, tramos: modelo.tramos, ahora: el.querySelector('.ahora'), barra: el.querySelector('.barra'), cabezal: el.querySelector('.cabezal'), ultimo: undefined };
+  return { el, nombre, tramos: modelo.tramos, verdad, ahora: el.querySelector('.ahora'), carriles: el.querySelector('.carriles'), ultimo: undefined };
 }
-function tablaTramos(nombre, tramos) {
-  return `<div class="tabla-caja"><table><caption>${esc(nombre)}</caption><thead><tr><th scope="col">Idioma</th><th scope="col">Inicio</th><th scope="col">Fin</th></tr></thead>
-    <tbody>${tramos.length ? tramos.map((t) => `<tr><th scope="row">${NOMBRE_IDIOMA[t.idioma]}</th><td>${segundos(t.inicio)}</td><td>${segundos(t.fin)}</td></tr>`).join('')
-      : '<tr><td colspan="3">Sin tramos de habla</td></tr>'}</tbody></table></div>`;
+function tablaTramos(nombre, tramos, verdad) {
+  const conVerdad = Boolean(verdad);
+  return `<div class="tabla-caja"><table><caption>${esc(nombre)}</caption><thead><tr><th scope="col">Idioma</th><th scope="col">Inicio</th><th scope="col">Fin</th>${conVerdad ? '<th scope="col">Coincide</th>' : ''}</tr></thead>
+    <tbody>${tramos.length ? tramos.map((t) => `<tr><th scope="row">${NOMBRE_IDIOMA[t.idioma]}</th><td>${segundos(t.inicio)}</td><td>${segundos(t.fin)}</td>${conVerdad ? `<td>${porciento(coincidencia(t, verdad) / Math.max(t.fin - t.inicio, 1e-9))}</td>` : ''}</tr>`).join('')
+      : `<tr><td colspan="${conVerdad ? 4 : 3}">Sin tramos de habla</td></tr>`}</tbody></table></div>`;
 }
+
+// Onda: picos del audio, dibujados dos veces (gris y tinta); la parte ya oída se recorta con --p.
+async function cargarOnda(src, mio) {
+  try {
+    const r = await fetch(src);
+    if (!r.ok) throw new Error(`El servidor respondió ${r.status}.`);
+    const buffer = await new OfflineAudioContext(1, 1, SR).decodeAudioData(await r.arrayBuffer());
+    if (mio !== turno || !actual) return;
+    const datos = buffer.getChannelData(0), n = 800, picos = new Float32Array(n);
+    const tam = Math.max(1, Math.floor(datos.length / n));
+    for (let i = 0; i < n; i++) {
+      let m = 0;
+      for (let k = i * tam, fin = Math.min(datos.length, k + tam); k < fin; k++) m = Math.max(m, Math.abs(datos[k]));
+      picos[i] = m;
+    }
+    const tope = Math.max(...picos, 1e-6);
+    actual.picos = picos.map((x) => x / tope);
+    dibujarOnda();
+  } catch (e) {
+    console.warn('No se pudo dibujar la onda:', e);  // la onda es apoyo visual; los carriles y el audio siguen
+  }
+}
+function dibujarOnda() {
+  if (!actual || !actual.picos) return;
+  const dpr = window.devicePixelRatio || 1;
+  for (const [lienzo, color] of [[actual.onda.querySelector('.base'), '#c4cacd'], [actual.onda.querySelector('.jugado'), '#1b2129']]) {
+    const w = Math.round(lienzo.clientWidth * dpr), h = Math.round(lienzo.clientHeight * dpr);
+    lienzo.width = w; lienzo.height = h;
+    const ctx = lienzo.getContext('2d');
+    ctx.fillStyle = color;
+    const barra = Math.max(1, Math.round(2 * dpr)), hueco = Math.round(dpr), columnas = Math.floor(w / (barra + hueco));
+    for (let c = 0; c < columnas; c++) {
+      const v = actual.picos[Math.floor((c / columnas) * actual.picos.length)];
+      const alto = Math.max(dpr, v * (h - 2 * dpr));
+      ctx.fillRect(c * (barra + hueco), (h - alto) / 2, barra, alto);
+    }
+  }
+}
+
 function mostrar(datos, src, titulo) {
   $('analizando').textContent = '';
-  $('resultado').hidden = false;  // visible antes de medir el ancho de las barras
+  $('vacio').hidden = true;
+  $('resultado').classList.remove('cargando');
+  $('resultado').hidden = false;  // visible antes de medir el ancho de los carriles
   const dur = datos.duracion;
+  const verdad = datos.verdad ? datos.verdad.tramos : null;
   const filas = [];
-  if (datos.verdad) filas.push(['Verdad', 'metadata de la frase', datos.verdad]);
-  filas.push(['Profundo', 'CNN + BiLSTM', datos.modelos.profundo]);
+  if (datos.verdad) filas.push(['Verdad', 'metadata de la frase', datos.verdad, null]);
+  filas.push(['Profundo', 'CNN + BiLSTM', datos.modelos.profundo, verdad]);
   const ns = datos.modelos.no_supervisado;
-  filas.push(['No supervisado', ALGORITMO[ns.algoritmo] || ns.algoritmo, ns]);
+  filas.push(['No supervisado', ALGORITMO[ns.algoritmo] || ns.algoritmo, ns, verdad]);
   const pistas = $('pistas');
   pistas.innerHTML = '';
-  actual = { dur, pistas: filas.map(([n, d, m], i) => pista(n, d, m, dur, i)) };
+  const filaOnda = document.createElement('div');
+  filaOnda.className = 'pista';
+  filaOnda.innerHTML = `<span class="pista-nombre"></span><span></span>
+    <div class="onda" tabindex="0" role="slider" aria-label="Posición en el audio" aria-valuemin="0" aria-valuemax="${dur.toFixed(1)}" aria-valuenow="0">
+      <canvas class="base"></canvas><canvas class="jugado"></canvas></div>`;
+  pistas.append(filaOnda);
+  actual = { dur, onda: filaOnda.querySelector('.onda'), picos: null, pistas: filas.map(([n, d, m, v], i) => pista(n, d, m, dur, i, v)) };
   for (const p of actual.pistas) pistas.append(p.el);
-  // Un tramo muy angosto no cabe su etiqueta; el color y la tabla de tramos siguen diciendo el idioma.
-  for (const t of pistas.querySelectorAll('.tramo')) if (t.offsetWidth < 26) t.textContent = '';
+  // Un tramo muy angosto no cabe su etiqueta; el color, el carril y la tabla de tramos siguen diciendo el idioma.
+  for (const t of pistas.querySelectorAll('.tramo')) if (t.offsetWidth < 28) t.textContent = '';
   const eje = document.createElement('div');
   eje.className = 'pista';
-  const paso = pasoEje(dur, actual.pistas[0].barra.clientWidth || pistas.clientWidth);
+  const ancho = actual.onda.clientWidth || pistas.clientWidth;
+  const paso = pasoEje(dur, ancho);
   const marcas = [];
   for (let t = 0; t <= dur + 1e-6; t += paso) marcas.push(`<span style="left:${(100 * t / dur).toFixed(3)}%">${t} s</span>`);
-  eje.innerHTML = `<span aria-hidden="true"></span><div class="eje" aria-hidden="true">${marcas.join('')}</div>`;
+  eje.innerHTML = `<span class="pista-nombre"></span><span></span><div class="eje" aria-hidden="true">${marcas.join('')}</div>`;
   pistas.append(eje);
-  $('tablas-tramos').innerHTML = filas.map(([n, , m]) => tablaTramos(n, m.tramos)).join('');
+  actual.cabezal = Object.assign(document.createElement('div'), { className: 'cabezal' });
+  pistas.append(actual.cabezal);
+  $('tablas-tramos').innerHTML = filas.map(([n, , m, v]) => tablaTramos(n, m.tramos, v)).join('');
   $('resultado-titulo').textContent = `${titulo} · ${segundos(dur)}`;
+  $('reloj-total').textContent = reloj(dur);
   const reproductor = $('reproductor');
   reproductor.src = src;
+  medirCabezal();
   moverCabezal();
+  cargarOnda(src, turno);
+}
+// Geometría del cabezal: una sola línea que cruza la onda y los tres carriles.
+function medirCabezal() {
+  if (!actual) return;
+  const caja = $('pistas').getBoundingClientRect();
+  const onda = actual.onda.getBoundingClientRect();
+  const ultimo = actual.pistas[actual.pistas.length - 1].carriles.getBoundingClientRect();
+  actual.x0 = onda.left - caja.left;
+  actual.ancho = onda.width;
+  actual.cabezal.style.top = `${onda.top - caja.top}px`;
+  actual.cabezal.style.height = `${ultimo.bottom - onda.top}px`;
 }
 function moverCabezal() {
   if (!actual) return;
   const t = $('reproductor').currentTime;
+  const f = Math.min(t / actual.dur, 1);
+  actual.cabezal.style.transform = `translateX(${(actual.x0 + f * actual.ancho).toFixed(1)}px)`;
+  actual.onda.style.setProperty('--p', `${(100 * f).toFixed(2)}%`);
+  actual.onda.setAttribute('aria-valuenow', t.toFixed(1));
+  actual.onda.setAttribute('aria-valuetext', `${segundos(t)} de ${segundos(actual.dur)}`);
+  $('reloj-actual').textContent = reloj(Math.min(t, actual.dur));
   for (const p of actual.pistas) {
-    p.cabezal.style.transform = `translateX(${(Math.min(t / actual.dur, 1) * p.barra.clientWidth).toFixed(1)}px)`;
     const idioma = idiomaEn(p.tramos, t);
     if (idioma !== p.ultimo) {
       p.ultimo = idioma;
@@ -984,9 +1147,69 @@ function bucle() {
   moverCabezal();
   if (!$('reproductor').paused) requestAnimationFrame(bucle);
 }
-$('reproductor').addEventListener('play', () => requestAnimationFrame(bucle));
+function pintarReproducir() {
+  const pausado = $('reproductor').paused;
+  $('reproducir').setAttribute('aria-label', pausado ? 'Reproducir' : 'Pausar');
+  $('reproducir').querySelector('use').setAttribute('href', pausado ? '#i-correr' : '#i-pausa');
+}
+function alternar() {
+  const r = $('reproductor');
+  if (r.paused) r.play().catch((e) => console.warn('No se pudo reproducir:', e)); else r.pause();
+}
+function buscar(t) {
+  if (!actual) return;
+  $('reproductor').currentTime = Math.max(0, Math.min(actual.dur, t));
+  moverCabezal();
+}
+$('reproductor').addEventListener('play', () => { pintarReproducir(); requestAnimationFrame(bucle); });
+$('reproductor').addEventListener('pause', pintarReproducir);
 for (const ev of ['seeked', 'timeupdate', 'loadedmetadata']) $('reproductor').addEventListener(ev, moverCabezal);
-window.addEventListener('resize', moverCabezal);
+$('reproducir').addEventListener('click', alternar);
+window.addEventListener('resize', () => { medirCabezal(); moverCabezal(); dibujarOnda(); });
+
+// Clic o arrastre sobre la onda o un carril: lleva el audio a ese instante.
+let arrastre = false;
+const tiempoEn = (ev) => ((ev.clientX - $('pistas').getBoundingClientRect().left - actual.x0) / actual.ancho) * actual.dur;
+$('pistas').addEventListener('pointerdown', (ev) => {
+  if (!actual || !ev.target.closest('.onda, .carriles')) return;
+  arrastre = true;
+  $('pistas').setPointerCapture(ev.pointerId);
+  buscar(tiempoEn(ev));
+});
+$('pistas').addEventListener('pointermove', (ev) => {
+  if (!actual) return;
+  if (arrastre) { buscar(tiempoEn(ev)); return; }
+  const tramo = ev.target.closest('.tramo');
+  const globo = $('globo');
+  const p = tramo && actual.pistas.find((x) => x.carriles === tramo.parentElement);
+  if (!p) { globo.classList.remove('visible'); return; }
+  const t = p.tramos[Number(tramo.dataset.j)];
+  const largo = t.fin - t.inicio;
+  globo.innerHTML = `<strong>${NOMBRE_IDIOMA[t.idioma]} · ${esc(p.nombre)}</strong><span>${fmt(t.inicio, 2)}–${fmt(t.fin, 2)} s · ${fmt(largo, 2)} s</span>${
+    p.verdad ? `<br><span>Coincide con la verdad: ${porciento(coincidencia(t, p.verdad) / Math.max(largo, 1e-9))}</span>` : ''}`;
+  const caja = $('tablero').getBoundingClientRect();
+  const r = tramo.getBoundingClientRect();
+  globo.style.left = `${Math.min(Math.max(ev.clientX - caja.left, 120), caja.width - 120)}px`;
+  globo.style.top = `${r.top - caja.top}px`;
+  globo.classList.add('visible');
+});
+for (const ev of ['pointerup', 'pointercancel']) $('pistas').addEventListener(ev, () => { arrastre = false; });
+$('pistas').addEventListener('pointerleave', () => $('globo').classList.remove('visible'));
+$('pistas').addEventListener('keydown', (ev) => {
+  if (!actual || !ev.target.classList.contains('onda')) return;
+  const t = $('reproductor').currentTime;
+  const nuevo = { ArrowLeft: t - 0.5, ArrowRight: t + 0.5, PageDown: t - 5, PageUp: t + 5, Home: 0, End: actual.dur }[ev.key];
+  if (nuevo === undefined) return;
+  ev.preventDefault();
+  buscar(nuevo);
+});
+// Atajos de la vista Probar: Espacio reproduce o pausa; J y K cambian de frase.
+document.addEventListener('keydown', (ev) => {
+  if ($('vista-probar').hidden || ev.ctrlKey || ev.metaKey || ev.altKey) return;
+  if (ev.target instanceof Element && ev.target.closest('input, textarea, select, [contenteditable], button, a, summary')) return;
+  if (ev.key === ' ' && actual && !$('resultado').hidden) { ev.preventDefault(); alternar(); }
+  else if ((ev.key === 'j' || ev.key === 'k') && !$('panel-frase').hidden) saltarFrase(ev.key === 'j' ? -1 : 1);
+});
 
 /* ================= Arranque ================= */
 (async function iniciar() {

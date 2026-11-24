@@ -85,7 +85,13 @@ def test_analizar_ok(servidor_vivo, tono):
     assert r.status == 200 and 'modelos' in json.loads(r.read())
 
 
-@pytest.mark.parametrize('ruta', ['/resultados/../src/servidor.py', '/audio/prueba/..%2F..%2Fsrc%2Fconfig.py'])
+def test_sirve_fuentes(servidor_vivo):
+    with urllib.request.urlopen(servidor_vivo + '/fuentes/atkinson-next.woff2', timeout=30) as r:
+        assert r.status == 200 and r.headers['Content-Type'] == 'font/woff2'
+
+
+@pytest.mark.parametrize('ruta', ['/resultados/../src/servidor.py', '/audio/prueba/..%2F..%2Fsrc%2Fconfig.py',
+                                  '/fuentes/..%2Fservidor.py'])
 def test_sin_salir_de_carpeta(servidor_vivo, ruta):
     assert get(servidor_vivo + ruta).status == 404
 

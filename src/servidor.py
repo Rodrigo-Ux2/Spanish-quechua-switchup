@@ -37,6 +37,7 @@ from inferencia import ErrorEntrada
 from modelo_profundo import ErrorModelo
 
 APP = Path(__file__).resolve().parent / 'app.html'
+FUENTES = APP.parent / 'fuentes'  # tipografías servidas en local: la app funciona sin internet
 PRUEBA = SINTETICO / 'prueba'
 PUERTOS = range(8000, 8011)
 MAX_AUDIO = 20 * 1024 * 1024  # bytes del WAV que acepta /api/analizar
@@ -264,6 +265,8 @@ class Manejador(BaseHTTPRequestHandler):
             self.enviar_archivo(APP)
         elif url.path.startswith('/resultados/'):
             self.enviar_archivo(dentro_de(RESULTADOS, url.path.removeprefix('/resultados/')))
+        elif url.path.startswith('/fuentes/'):
+            self.enviar_archivo(dentro_de(FUENTES, url.path.removeprefix('/fuentes/')))
         elif url.path.startswith('/audio/prueba/'):
             self.enviar_archivo(dentro_de(PRUEBA, url.path.removeprefix('/audio/prueba/')))
         elif url.path == '/api/estado':

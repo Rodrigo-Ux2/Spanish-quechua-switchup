@@ -55,50 +55,66 @@ code { font-family: var(--mono); font-size: 0.9em; }
 .icono { width: 20px; height: 20px; flex: none; fill: none; stroke: currentColor; stroke-width: 1.75; stroke-linecap: round; stroke-linejoin: round; }
 .num { font-family: var(--texto); font-variant-numeric: tabular-nums; }
 
-/* ---- Armazón: riel pizarra + contenido ---- */
-.app { min-height: 100vh; display: grid; grid-template-columns: 248px minmax(0, 1fr); }
-.riel { background: var(--pizarra); color: var(--tiza); padding: 0 16px; view-transition-name: riel; }
+/* ---- Armazón: barra pizarra arriba + contenido a lo ancho ---- */
+html { scroll-padding-top: 72px; }  /* la barra fija no tapa lo que se desplaza a la vista */
+.app { min-height: 100vh; display: flex; flex-direction: column; }
+.barra { position: sticky; top: 0; z-index: 20; background: var(--pizarra); color: var(--tiza); view-transition-name: barra; }
 ::view-transition-old(root), ::view-transition-new(root) { animation-duration: 200ms; animation-timing-function: var(--ease-out); }
-::view-transition-group(riel) { animation: none; }
-.riel-dentro { position: sticky; top: 0; height: 100vh; padding: 28px 0 24px; display: flex; flex-direction: column; gap: 40px; }
-.marca { margin: 0; display: grid; grid-template-columns: auto 1fr; gap: 4px 12px; align-items: center; padding: 0 8px; }
-.marca svg { grid-row: span 2; width: 36px; height: 28px; }
-.marca b { font-size: 16px; line-height: 1.2; font-weight: 700; color: #fff; letter-spacing: -0.01em; }
+::view-transition-group(barra) { animation: none; }
+.barra-dentro { max-width: 1440px; margin: 0 auto; min-height: 56px; padding: 0 clamp(16px, 3vw, 32px); display: flex; align-items: center; gap: 8px 32px; }
+.marca { margin: 0; display: grid; grid-template-columns: auto auto; gap: 0 12px; align-items: center; flex: none; }
+.marca svg { grid-row: span 2; width: 28px; height: 22px; }
+.marca b { font-size: 15px; line-height: 1.2; font-weight: 700; color: #fff; letter-spacing: -0.01em; }
 .marca span { font-size: 13px; line-height: 1.3; color: var(--tiza-tenue); }
-.nav { display: flex; flex-direction: column; gap: 4px; counter-reset: leccion; }
+.nav { display: flex; gap: 4px; counter-reset: leccion; }
 .nav a {
-  display: flex; align-items: center; gap: 12px; padding: 10px 8px; border-radius: var(--radio);
-  color: var(--tiza); text-decoration: none; font-weight: 500; font-size: 17px;
+  display: flex; align-items: center; gap: 8px; padding: 8px 12px 8px 8px; border-radius: var(--radio);
+  color: var(--tiza); text-decoration: none; font-weight: 500; font-size: 15px; white-space: nowrap;
   transition: background-color 150ms ease, color 150ms ease;
 }
 .nav a::before {
   counter-increment: leccion; content: counter(leccion);
-  display: grid; place-items: center; width: 26px; height: 26px; flex: none; border-radius: var(--radio);
-  font: 600 14px/1 var(--texto); color: var(--tiza-tenue); box-shadow: inset 0 0 0 1px #4f666c;
+  display: grid; place-items: center; width: 22px; height: 22px; flex: none; border-radius: var(--radio);
+  font: 600 13px/1 var(--texto); color: var(--tiza-tenue); box-shadow: inset 0 0 0 1px #4f666c;
   transition: background-color 150ms ease, color 150ms ease, box-shadow 150ms ease;
 }
 .nav a:hover { background: var(--pizarra-activo); }
 .nav a[aria-current="page"] { background: var(--pizarra-activo); color: #fff; font-weight: 700; }
 .nav a[aria-current="page"]::before { background: var(--tiza); color: var(--pizarra); box-shadow: none; }
 .nav a:focus-visible { outline-color: #fff; }
-.estado-global { margin: auto 8px 0; font-size: 13px; line-height: 1.45; color: var(--tiza-tenue); display: grid; gap: 2px; }
-.estado-global strong { display: flex; align-items: center; gap: 8px; color: var(--tiza); font-weight: 600; font-size: 14px; }
+.estado-global { margin: 0 0 0 auto; font-size: 13px; line-height: 1.3; color: var(--tiza-tenue); display: flex; align-items: center; gap: 4px 8px; flex-wrap: wrap; justify-content: flex-end; text-align: right; }
+.estado-global strong { display: flex; align-items: center; gap: 8px; color: var(--tiza); font-weight: 600; font-size: 14px; white-space: nowrap; }
 .estado-global strong::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: var(--tiza-tenue); }
 .estado-global[data-tono="ok"] strong::before { background: #7fd0a4; }
 .estado-global[data-tono="corriendo"] strong::before { background: var(--qu); animation: latido 1.6s ease-in-out infinite; }
 .estado-global[data-tono="mal"] strong::before { background: #ff9d8a; }
 @keyframes latido { 50% { opacity: 0.35; } }
 
-main { padding: 56px clamp(16px, 4vw, 64px) 112px; min-width: 0; }
-.vista { max-width: 1160px; }
-.cabecera { margin-bottom: 40px; }
-h1 { font-size: clamp(2.25rem, 4.6vw, 3.5rem); line-height: 1.02; letter-spacing: -0.03em; font-weight: 700; margin: 0 0 16px; text-wrap: balance; }
-h1[data-n] { display: flex; align-items: center; gap: 0.3em; }
-h1[data-n]::before { content: attr(data-n) / ""; display: grid; place-items: center; flex: none; width: 1.3em; height: 1.3em; border-radius: var(--radio); background: var(--pizarra); color: var(--tiza); font-size: 0.55em; font-weight: 700; letter-spacing: 0; }
-h2 { font-size: 1.375rem; line-height: 1.25; letter-spacing: -0.015em; font-weight: 700; margin: 64px 0 16px; text-wrap: balance; }
+main { width: 100%; max-width: 1440px; margin: 0 auto; padding: 28px clamp(16px, 3vw, 32px) 64px; min-width: 0; }
+.cabecera { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 24px; margin-bottom: 24px; padding-bottom: 20px; border-bottom: 1px solid var(--linea); }
+.cabecera-fin { margin-left: auto; display: flex; flex-wrap: wrap; align-items: center; gap: 8px 16px; }
+h1 { font-size: clamp(1.625rem, 2.2vw, 2rem); line-height: 1.15; letter-spacing: -0.02em; font-weight: 700; margin: 0; text-wrap: balance; }
+h1[data-n] { display: flex; align-items: center; gap: 0.4em; }
+h1[data-n]::before { content: attr(data-n) / ""; display: grid; place-items: center; flex: none; width: 1.55em; height: 1.55em; border-radius: var(--radio); background: var(--pizarra); color: var(--tiza); font-size: 0.6em; font-weight: 700; letter-spacing: 0; }
+h2 { font-size: 1.125rem; line-height: 1.3; letter-spacing: -0.01em; font-weight: 700; margin: 32px 0 12px; text-wrap: balance; }
 h3 { font-size: 1rem; font-weight: 700; margin: 0 0 8px; }
-.bajada { margin: 0; max-width: 64ch; color: var(--tinta-2); font-size: 18px; line-height: 1.55; }
+.bajada { margin: 0; flex: 1 1 380px; max-width: 72ch; color: var(--tinta-2); font-size: 15px; line-height: 1.5; }
 p { max-width: 70ch; }
+
+/* ---- Rejillas de trabajo: bloques lado a lado en pantallas anchas ---- */
+.rejilla { display: grid; gap: 28px 24px; align-items: start; }
+.bloque { min-width: 0; }
+.bloque > h2:first-child, .bloque > .bloque-cab:first-child { margin-top: 0; }
+.bloque-cab { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: 4px 16px; margin: 0 0 12px; }
+.bloque-cab h2 { margin: 0; }
+.bloque-cab p { margin: 0; font-size: 14px; }
+.panel { padding: 20px; background: var(--superficie); border: 1px solid var(--linea); border-radius: var(--radio); }
+@media (min-width: 1100px) {
+  .rejilla.datos { grid-template-columns: minmax(0, 3fr) minmax(320px, 2fr); grid-template-rows: auto 1fr; }
+  .rejilla.datos > .bloque:last-child { grid-column: 2; grid-row: 1 / span 2; }
+  .rejilla.dos { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .rejilla.dos > .ancho { grid-column: 1 / -1; }
+}
 
 /* ---- Controles ---- */
 .boton {
@@ -137,7 +153,7 @@ p { max-width: 70ch; }
 .tabla-caja { overflow-x: auto; border: 1px solid var(--linea); border-radius: var(--radio); background: var(--superficie); }
 table { border-collapse: collapse; width: 100%; }
 caption { text-align: left; padding: 14px 16px 2px; color: var(--tinta-2); font-size: 14px; caption-side: top; }
-th, td { padding: 12px 16px; text-align: right; border-bottom: 1px solid var(--linea); white-space: nowrap; }
+th, td { padding: 10px 16px; text-align: right; border-bottom: 1px solid var(--linea); white-space: nowrap; }
 td { font-family: var(--texto); font-variant-numeric: tabular-nums; font-size: 15px; }
 th:first-child, td:first-child { text-align: left; }
 thead th { font-size: 14px; font-weight: 600; color: var(--tinta-2); }
@@ -150,7 +166,7 @@ tr.total td, tr.total th { font-weight: 700; background: #f4f5f1; }
 td.txt { font-family: var(--texto); font-size: 16px; text-align: left; }
 
 /* ---- Datos ---- */
-.horas { display: grid; gap: 16px; margin-top: 40px; }
+.horas { display: grid; gap: 16px; }
 .horas-fila { display: grid; grid-template-columns: 88px minmax(0, 1fr) 72px; align-items: center; gap: 16px; --c: var(--es); }
 .horas-fila.qu { --c: var(--qu); }
 .horas-nombre { font-weight: 700; }
@@ -165,20 +181,21 @@ td.txt { font-family: var(--texto); font-size: 16px; text-align: left; }
 .muestra.p1 { background: var(--tinta-2); opacity: 0.55; }
 .muestra.p2 { background: var(--tinta-2); opacity: 0.3; }
 .ejemplos .cab strong { font-family: var(--mono); }
-.ejemplos audio { width: 100%; }
+.bloque .nota { margin: -4px 0 12px; font-size: 14px; }
+.ejemplos audio { width: 100%; height: 40px; }
 
 /* ---- Resultados ---- */
-.lead { font-size: clamp(1.25rem, 2vw, 1.5rem); line-height: 1.45; letter-spacing: -0.01em; max-width: 52ch; margin: 0 0 48px; }
+.lead { font-size: clamp(1.125rem, 1.6vw, 1.375rem); line-height: 1.45; letter-spacing: -0.01em; max-width: 64ch; margin: 0 0 28px; }
 .lead strong { font-weight: 700; white-space: nowrap; font-variant-numeric: tabular-nums; }
 .metricas { --m: var(--tinta); }
 .metricas .m-profundo { --m: var(--tinta); }
 .metricas .m-no_supervisado { --m: #6f8890; }
 .metricas .m-linea_base { --m: #b4bcbf; }
-.metricas thead th { vertical-align: bottom; white-space: normal; min-width: 168px; text-align: left; }
+.metricas thead th { vertical-align: bottom; white-space: normal; min-width: 136px; text-align: left; }
 .metricas thead th:first-child { min-width: 0; }
 .metricas .clave { display: inline-block; width: 10px; height: 10px; margin-right: 8px; background: var(--m); }
 .metricas td { text-align: left; }
-.valor { display: grid; grid-template-columns: 52px minmax(72px, 1fr); align-items: center; gap: 12px; }
+.valor { display: grid; grid-template-columns: 52px minmax(56px, 1fr); align-items: center; gap: 12px; }
 .pista-m { height: 10px; background: var(--sin-habla); }
 .pista-m i { display: block; height: 100%; width: calc(var(--v) * 100%); background: var(--m); transform-origin: left; animation: crecer 700ms var(--ease-out) both; animation-delay: calc(var(--i, 0) * 40ms); }
 @keyframes crecer { from { transform: scaleX(0); } }
@@ -189,14 +206,20 @@ td.mejor .pista-m { box-shadow: 0 0 0 1px var(--tinta); }
 .figuras a:hover img { opacity: 0.85; }
 
 /* ---- Probar ---- */
-.fuente { display: grid; gap: 20px; padding: 24px; background: var(--superficie); border: 1px solid var(--linea); border-radius: var(--radio); }
-.fuente-cab { display: flex; flex-wrap: wrap; gap: 12px 16px; align-items: center; }
+.fuente { padding: 16px; background: var(--superficie); border: 1px solid var(--linea); border-radius: var(--radio); }
+.fuente-cab { display: flex; flex-wrap: wrap; gap: 12px 16px; align-items: center; margin-bottom: 16px; }
+.salida { min-width: 0; }
+@media (min-width: 1200px) {
+  .rejilla.probar { grid-template-columns: 420px minmax(0, 1fr); }
+  .rejilla.probar .fuente { position: sticky; top: 72px; }
+  .rejilla.probar .vacio { min-height: 320px; flex-direction: column; justify-content: center; text-align: center; }
+}
 .fuente-cab .atajos { margin-left: auto; }
 .atajos { margin: 0; font-size: 14px; color: var(--tinta-2); display: flex; flex-wrap: wrap; gap: 4px 16px; }
 kbd { display: inline-block; min-width: 22px; text-align: center; font: 600 13px/1 var(--mono); padding: 4px 6px 3px; border: 1px solid var(--linea-fuerte); border-bottom-width: 2px; border-radius: var(--radio); background: var(--papel); color: var(--tinta); }
-.frases { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(128px, 1fr)); gap: 8px; }
+.frases { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(112px, 1fr)); gap: 8px; }
 .frases button {
-  width: 100%; display: grid; grid-template-columns: 1fr auto; align-items: baseline; gap: 8px; padding: 10px 12px 12px;
+  width: 100%; display: grid; grid-template-columns: 1fr auto; align-items: baseline; gap: 6px; padding: 10px 10px 12px;
   border: 1px solid var(--linea); border-radius: var(--radio); background: var(--papel); color: var(--tinta);
   font: inherit; font-size: 15px; text-align: left; cursor: pointer;
   transition: transform 160ms var(--ease-out), border-color 150ms ease, background-color 150ms ease, color 150ms ease;
@@ -217,14 +240,15 @@ kbd { display: inline-block; min-width: 22px; text-align: center; font: 600 13px
 .grabador { display: flex; flex-wrap: wrap; align-items: center; gap: 16px; }
 .reloj-grab { font-family: var(--mono); font-variant-numeric: tabular-nums; font-size: 1.75rem; font-weight: 600; }
 
-.analizando { min-height: 24px; margin: 20px 0 0; color: var(--tinta-2); display: flex; align-items: center; gap: 10px; }
+.analizando { min-height: 24px; margin: 0 0 12px; color: var(--tinta-2); display: flex; align-items: center; gap: 10px; }
+.analizando:empty { min-height: 0; margin: 0; }
 .analizando:not(:empty)::before { content: ""; width: 14px; height: 14px; border-radius: 50%; border: 2px solid var(--linea); border-top-color: var(--es); animation: girar 700ms linear infinite; }
 @keyframes girar { to { transform: rotate(360deg); } }
-.vacio { margin-top: 24px; display: flex; align-items: center; gap: 16px; padding: 20px 24px; border: 1px dashed var(--linea-fuerte); border-radius: var(--radio); color: var(--tinta-2); }
+.vacio { display: flex; align-items: center; gap: 16px; padding: 20px 24px; border: 1px dashed var(--linea-fuerte); border-radius: var(--radio); color: var(--tinta-2); }
 .vacio svg { width: 48px; height: 36px; flex: none; }
 .vacio p { margin: 0; }
 
-.resultado { margin-top: 20px; display: grid; gap: 16px; transition: opacity 200ms ease; }
+.resultado { display: grid; gap: 16px; transition: opacity 200ms ease; }
 .resultado.cargando { opacity: 0.45; }
 .resultado-cab { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: 8px 24px; }
 .resultado-cab h2 { margin: 0; }
@@ -280,8 +304,13 @@ summary { cursor: pointer; font-weight: 600; }
 .tablas-tramos { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px; margin-top: 16px; }
 
 /* ---- Entrenar ---- */
-.resumen-pasos { display: flex; flex-wrap: wrap; gap: 16px 32px; align-items: center; margin-bottom: 24px; }
-.riel-figura { margin: 32px 0 24px; padding: 0; background: none; border: 0; }
+#avisos-entrenar:not(:empty) { margin-bottom: 20px; }
+.riel-figura { margin: 0 0 16px; padding: 0; background: none; border: 0; }
+@media (min-width: 1100px) {
+  .rejilla.entrenar { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+  .registro-bloque { position: sticky; top: 72px; }
+  .registro-bloque .consola { height: max(380px, calc(100vh - 72px - 56px)); }
+}
 .riel-figura figcaption { margin-top: 8px; }
 .riel-pasos { list-style: none; margin: 0; padding: 0; display: flex; gap: 3px; height: 40px; }
 .riel-pasos li { position: relative; flex-basis: 0; min-width: 6px; background: var(--sin-habla); overflow: hidden; display: flex; align-items: center; justify-content: flex-start; }
@@ -296,11 +325,12 @@ summary { cursor: pointer; font-weight: 600; }
 .riel-pasos li[data-tono="neutro"] { --m: transparent; }
 .riel-pasos li[data-tono="activo"] { --m: var(--es); }
 .pasos { list-style: none; margin: 0; padding: 0; border: 1px solid var(--linea); border-radius: var(--radio); background: var(--superficie); }
-.paso { display: grid; grid-template-columns: 32px minmax(0, 1fr) auto auto; gap: 8px 16px; align-items: center; padding: 16px 20px; border-bottom: 1px solid var(--linea); transition: background-color 200ms ease; }
+.paso { display: grid; grid-template-columns: 32px minmax(0, 1fr) auto auto; gap: 8px 16px; align-items: center; padding: 12px 16px; border-bottom: 1px solid var(--linea); transition: background-color 200ms ease; }
 .paso:last-child { border-bottom: 0; }
 .paso-n { font: 700 15px/1 var(--texto); color: var(--tinta-2); }
 .paso-nombre { font-weight: 700; }
 .paso-meta { font-size: 14px; color: var(--tinta-2); }
+.paso-meta .ultima { white-space: nowrap; }
 .estado-paso { display: inline-flex; align-items: center; gap: 8px; padding: 4px 12px 4px 8px; font-size: 14px; font-weight: 600; white-space: nowrap; color: var(--tinta-2); border: 1px solid var(--linea); border-radius: var(--radio); background: var(--papel); }
 .estado-paso .icono { width: 16px; height: 16px; }
 .paso[data-tono="ok"] .estado-paso { color: var(--ok); background: var(--ok-fondo); border-color: #bcdcc8; }
@@ -309,8 +339,6 @@ summary { cursor: pointer; font-weight: 600; }
 .paso[data-tono="activo"] .estado-paso { color: var(--es); background: var(--superficie); border-color: #a9cbe3; font-family: var(--texto); font-variant-numeric: tabular-nums; }
 .progreso { grid-column: 2 / -1; height: 4px; background: var(--superficie); overflow: hidden; }
 .progreso div { height: 100%; width: 100%; background: var(--es); transform-origin: left; transform: scaleX(0); transition: transform 900ms linear; }
-.consola-cab { display: flex; justify-content: space-between; align-items: baseline; gap: 16px; margin: 48px 0 12px; }
-.consola-cab h2 { margin: 0; }
 .consola { margin: 0; height: 380px; overflow: auto; padding: 16px 20px; background: var(--pizarra); color: var(--tiza); border-radius: var(--radio); font: 13px/1.6 var(--mono); white-space: pre-wrap; overflow-wrap: anywhere; scrollbar-color: #56707a transparent; }
 .consola::selection, .consola *::selection { background: #4f666c; color: #fff; }
 .consola .comando { color: #fff; font-weight: 700; }
@@ -319,34 +347,36 @@ summary { cursor: pointer; font-weight: 600; }
 .consola .apagado { color: var(--tiza-tenue); }
 
 /* ---- Datos y resultados ---- */
-.chequeos { list-style: none; padding: 0; margin: 0 0 8px; display: flex; flex-wrap: wrap; gap: 8px 24px; }
+.chequeos { list-style: none; padding: 0; margin: 0; display: flex; flex-wrap: wrap; gap: 4px 20px; font-size: 14px; }
 .chequeos li { display: inline-flex; gap: 8px; align-items: center; }
 .chequeos .si { color: var(--ok); }
 .chequeos .no { color: var(--error); }
-.ejemplos { list-style: none; padding: 0; margin: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 16px; }
-.ejemplos li { padding: 16px; background: var(--superficie); border: 1px solid var(--linea); border-radius: var(--radio); display: grid; gap: 8px; }
-.ejemplos .cab { display: flex; justify-content: space-between; gap: 8px; font-size: 14px; }
-.figuras { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 440px), 1fr)); gap: 24px; }
-figure { margin: 0; background: var(--superficie); border: 1px solid var(--linea); border-radius: var(--radio); padding: 16px; }
+.ejemplos { list-style: none; padding: 0; margin: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 12px; }
+.ejemplos li { padding: 12px 16px; background: var(--superficie); border: 1px solid var(--linea); border-radius: var(--radio); display: grid; gap: 8px; }
+.ejemplos .cab { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: 4px 12px; font-size: 14px; }
+.figuras { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 380px), 1fr)); gap: 16px; align-items: start; }
+figure { margin: 0; background: var(--superficie); border: 1px solid var(--linea); border-radius: var(--radio); padding: 12px; }
 figure img { width: 100%; height: auto; display: block; }
 figcaption { font-size: 14px; color: var(--tinta-2); margin-top: 8px; }
 
 @media (max-width: 880px) {
-  .app { grid-template-columns: minmax(0, 1fr); }
-  .riel { padding: 16px; }
-  .riel-dentro { position: static; height: auto; padding: 0; gap: 12px; }
-  .nav { flex-direction: row; overflow-x: auto; }
-  .nav a { white-space: nowrap; }
-  .nav a { padding: 8px 10px 8px 8px; font-size: 16px; }
-  .estado-global { margin: 0 8px; }
-  main { padding: 32px 16px 64px; }
+  html { scroll-padding-top: 112px; }
+  .barra-dentro { flex-wrap: wrap; padding-block: 8px; column-gap: 16px; }
+  .nav { order: 3; width: 100%; overflow-x: auto; scrollbar-width: none; }
+  .estado-global span { display: none; }
+  main { padding: 20px 16px 48px; }
   .pista { grid-template-columns: 24px minmax(0, 1fr); column-gap: 8px; row-gap: 8px; }
   .pista-nombre { grid-column: 1 / -1; position: relative; z-index: 3; background: var(--superficie); padding-bottom: 4px; }
   .pista-nombre:empty { display: none; }
   .transporte .atajos { display: none; }
   .paso { grid-template-columns: 28px minmax(0, 1fr); }
   .paso > .estado-paso, .paso > .boton { grid-column: 2; justify-self: start; }
-  .fuente, .tablero { padding: 16px; }
+  .tablero { padding: 16px; }
+}
+@media (max-width: 480px) {
+  .nav { justify-content: space-between; }
+  .nav a { padding: 8px; }
+  .nav a::before { display: none; }  /* sin espacio para el número; el título de la vista lo muestra */
 }
 @media (prefers-reduced-motion: reduce) {
   .carriles.revelar, .pista-m i, .horas-barra { animation: none; }
@@ -370,7 +400,7 @@ figcaption { font-size: 14px; color: var(--tinta-2); margin-top: 8px; }
 </svg>
 <a class="saltar" href="#contenido">Saltar al contenido</a>
 <div class="app">
-  <header class="riel"><div class="riel-dentro">
+  <header class="barra"><div class="barra-dentro">
     <p class="marca">
       <svg viewBox="0 0 36 28" aria-hidden="true"><rect x="0" y="2" width="16" height="9" fill="#0072b2"/><path d="M17 6.5v15" stroke="#ecf1ef" stroke-width="2"/><rect x="18" y="17" width="18" height="9" fill="#e69f00"/></svg>
       <b>Code-switching</b><span>español–quechua por tramos</span></p>
@@ -389,14 +419,23 @@ figcaption { font-size: 14px; color: var(--tinta-2); margin-top: 8px; }
       <div class="cabecera">
         <h1 id="t-datos" data-n="1">Datos</h1>
         <p class="bajada">Clips validados de Common Voice por idioma y partición, y frases sintéticas armadas con ellos. Ningún hablante aparece en dos particiones.</p>
+        <ul class="chequeos cabecera-fin" id="chequeos"></ul>
       </div>
-      <ul class="chequeos" id="chequeos"></ul>
-      <div id="datos-grafico"></div>
-      <h2>Clips por idioma y partición</h2>
-      <div id="datos-tabla"></div>
-      <h2>Frases sintéticas de prueba</h2>
-      <p class="tenue">Mixtas alternan idiomas; monolingües usan un solo hablante e idioma; de control cambian de hablante sin cambiar de idioma.</p>
-      <div id="datos-ejemplos"></div>
+      <div class="rejilla datos">
+        <section class="bloque" aria-labelledby="t-horas">
+          <h2 id="t-horas">Horas por idioma y partición</h2>
+          <div class="panel" id="datos-grafico"></div>
+        </section>
+        <section class="bloque" aria-labelledby="t-clips">
+          <h2 id="t-clips">Clips por idioma y partición</h2>
+          <div id="datos-tabla"></div>
+        </section>
+        <section class="bloque" aria-labelledby="t-frases">
+          <h2 id="t-frases">Frases sintéticas de prueba</h2>
+          <p class="tenue nota">Mixtas alternan idiomas; monolingües usan un solo hablante e idioma; de control cambian de hablante sin cambiar de idioma.</p>
+          <div id="datos-ejemplos"></div>
+        </section>
+      </div>
     </section>
 
     <!-- ================= ENTRENAR ================= -->
@@ -404,25 +443,32 @@ figcaption { font-size: 14px; color: var(--tinta-2); margin-top: 8px; }
       <div class="cabecera">
         <h1 id="t-entrenar" data-n="2">Entrenar</h1>
         <p class="bajada">Corre el pipeline completo o un paso suelto. La corrida sigue aunque cierres o recargues la pestaña; al volver, el registro se muestra entero.</p>
-      </div>
-      <div class="resumen-pasos">
-        <div class="acciones">
-          <button class="boton principal" id="correr-todo" type="button"><svg class="icono" aria-hidden="true"><use href="#i-correr"/></svg>Correr todo</button>
-          <button class="boton peligro" id="cancelar" type="button" hidden>Cancelar</button>
+        <div class="cabecera-fin">
+          <p class="tenue" id="total-estimado" style="margin:0;font-size:14px;font-variant-numeric:tabular-nums"></p>
+          <div class="acciones">
+            <button class="boton peligro" id="cancelar" type="button" hidden>Cancelar</button>
+            <button class="boton principal" id="correr-todo" type="button"><svg class="icono" aria-hidden="true"><use href="#i-correr"/></svg>Correr todo</button>
+          </div>
         </div>
-        <p class="tenue" id="total-estimado" style="margin:0;font-variant-numeric:tabular-nums"></p>
       </div>
       <div id="avisos-entrenar"></div>
-      <figure class="riel-figura">
-        <ol class="riel-pasos" id="riel-pasos" aria-hidden="true"></ol>
-        <figcaption id="riel-nota"></figcaption>
-      </figure>
-      <ol class="pasos" id="pasos"></ol>
-      <div class="consola-cab">
-        <h2>Registro</h2>
-        <span class="tenue" id="consola-paso"></span>
+      <div class="rejilla entrenar">
+        <section class="bloque" aria-labelledby="t-pasos">
+          <h2 id="t-pasos">Pasos</h2>
+          <figure class="riel-figura">
+            <ol class="riel-pasos" id="riel-pasos" aria-hidden="true"></ol>
+            <figcaption id="riel-nota"></figcaption>
+          </figure>
+          <ol class="pasos" id="pasos"></ol>
+        </section>
+        <section class="bloque registro-bloque" aria-labelledby="t-registro">
+          <div class="bloque-cab">
+            <h2 id="t-registro">Registro</h2>
+            <span class="tenue" id="consola-paso"></span>
+          </div>
+          <pre class="consola" id="registro" tabindex="0" aria-label="Registro de la corrida"><span class="apagado">Todavía no hay una corrida en esta sesión del servidor.</span></pre>
+        </section>
       </div>
-      <pre class="consola" id="registro" tabindex="0" aria-label="Registro de la corrida"><span class="apagado">Todavía no hay una corrida en esta sesión del servidor.</span></pre>
     </section>
 
     <!-- ================= RESULTADOS ================= -->
@@ -441,77 +487,81 @@ figcaption { font-size: 14px; color: var(--tinta-2); margin-top: 8px; }
         <p class="bajada">Elige una frase de prueba, sube un audio o graba con el micrófono. Cada modelo marca qué tramos son español y cuáles quechua.</p>
       </div>
       <div id="avisos-probar"></div>
-      <div class="fuente">
-        <div class="fuente-cab">
-          <fieldset class="segmentos" id="modo">
-            <legend>Origen del audio</legend>
-            <label><input type="radio" name="modo" value="frase" checked><span>Frase de prueba</span></label>
-            <label><input type="radio" name="modo" value="archivo"><span>Subir archivo</span></label>
-            <label><input type="radio" name="modo" value="grabar"><span>Grabar</span></label>
-          </fieldset>
-          <fieldset class="segmentos" id="tipo-frase">
-            <legend>Tipo de frase</legend>
-            <label><input type="radio" name="tipo" value="mixta" checked><span>Mixtas</span></label>
-            <label><input type="radio" name="tipo" value="monolingue"><span>Monolingües</span></label>
-            <label><input type="radio" name="tipo" value="control"><span>Control</span></label>
-          </fieldset>
-          <p class="atajos" id="atajos-frase"><span><kbd>J</kbd> <kbd>K</kbd> frase anterior o siguiente</span></p>
-        </div>
-
-        <div id="panel-frase">
-          <ul class="frases" id="frases" aria-label="Frases de prueba"></ul>
-        </div>
-
-        <div id="panel-archivo" hidden>
-          <div class="soltar" id="soltar">
-            <svg class="icono" aria-hidden="true" style="width:28px;height:28px"><use href="#i-subir"/></svg>
-            <p>Arrastra un audio aquí o</p>
-            <label class="boton" for="archivo">Elegir archivo</label>
-            <input type="file" id="archivo" accept="audio/*,.wav,.mp3,.m4a,.ogg,.webm,.flac" class="solo-lector">
-            <p class="tenue" style="font-size:14px">WAV, MP3, M4A, OGG o FLAC · entre 1 s y 5 min</p>
-          </div>
-        </div>
-
-        <div id="panel-grabar" hidden>
-          <div class="grabador">
-            <button class="boton principal" id="grabar" type="button"><svg class="icono" aria-hidden="true"><use href="#i-micro"/></svg><span>Empezar a grabar</span></button>
-            <span class="reloj-grab" id="reloj-grab" aria-live="off">0:00</span>
-            <span class="tenue" id="grabar-nota">Habla al menos 1 segundo; la grabación se corta sola a los 4:55 (el límite es 5 min).</span>
-          </div>
-        </div>
+      <div class="fuente-cab">
+        <fieldset class="segmentos" id="modo">
+          <legend>Origen del audio</legend>
+          <label><input type="radio" name="modo" value="frase" checked><span>Frase de prueba</span></label>
+          <label><input type="radio" name="modo" value="archivo"><span>Subir archivo</span></label>
+          <label><input type="radio" name="modo" value="grabar"><span>Grabar</span></label>
+        </fieldset>
+        <fieldset class="segmentos" id="tipo-frase">
+          <legend>Tipo de frase</legend>
+          <label><input type="radio" name="tipo" value="mixta" checked><span>Mixtas</span></label>
+          <label><input type="radio" name="tipo" value="monolingue"><span>Monolingües</span></label>
+          <label><input type="radio" name="tipo" value="control"><span>Control</span></label>
+        </fieldset>
+        <p class="atajos" id="atajos-frase"><span><kbd>J</kbd> <kbd>K</kbd> frase anterior o siguiente</span></p>
       </div>
 
-      <p class="analizando" id="analizando" aria-live="polite"></p>
-      <div id="error-probar" role="alert"></div>
-      <div class="vacio" id="vacio">
-        <svg viewBox="0 0 36 28" aria-hidden="true"><rect x="0" y="2" width="16" height="9" fill="#0072b2"/><path d="M17 6.5v15" stroke="#1b2129" stroke-width="2"/><rect x="18" y="17" width="18" height="9" fill="#e69f00"/></svg>
-        <p>Elige una frase, sube un audio o graba. Verás la verdad y los dos modelos sobre los mismos carriles: español arriba, quechua abajo, y cada cambio de idioma como un escalón.</p>
-      </div>
-
-      <div class="resultado" id="resultado" hidden>
-        <div class="resultado-cab">
-          <h2 id="resultado-titulo">Resultado</h2>
-          <ul class="leyenda" aria-label="Leyenda">
-            <li><span class="muestra es"></span>Español</li>
-            <li><span class="muestra qu"></span>Quechua</li>
-            <li><span class="muestra nada"></span>Sin habla</li>
-            <li><span class="muestra marca-cambio"></span>Cambio de idioma</li>
-          </ul>
-        </div>
-        <div class="tablero" id="tablero">
-          <div class="transporte">
-            <button class="boton principal" id="reproducir" type="button" aria-label="Reproducir"><svg class="icono" aria-hidden="true"><use href="#i-correr"/></svg></button>
-            <p class="reloj" style="margin:0"><span id="reloj-actual">0:00,0</span> <span class="total">/ <span id="reloj-total">0:00,0</span></span></p>
-            <p class="atajos"><span><kbd>Espacio</kbd> reproduce o pausa</span><span><kbd>←</kbd> <kbd>→</kbd> sobre la onda: medio segundo</span></p>
+      <div class="rejilla probar">
+        <div class="fuente">
+          <div id="panel-frase">
+            <ul class="frases" id="frases" aria-label="Frases de prueba"></ul>
           </div>
-          <div class="pistas" id="pistas"></div>
-          <div class="globo" id="globo" aria-hidden="true"></div>
+
+          <div id="panel-archivo" hidden>
+            <div class="soltar" id="soltar">
+              <svg class="icono" aria-hidden="true" style="width:28px;height:28px"><use href="#i-subir"/></svg>
+              <p>Arrastra un audio aquí o</p>
+              <label class="boton" for="archivo">Elegir archivo</label>
+              <input type="file" id="archivo" accept="audio/*,.wav,.mp3,.m4a,.ogg,.webm,.flac" class="solo-lector">
+              <p class="tenue" style="font-size:14px">WAV, MP3, M4A, OGG o FLAC · entre 1 s y 5 min</p>
+            </div>
+          </div>
+
+          <div id="panel-grabar" hidden>
+            <div class="grabador">
+              <button class="boton principal" id="grabar" type="button"><svg class="icono" aria-hidden="true"><use href="#i-micro"/></svg><span>Empezar a grabar</span></button>
+              <span class="reloj-grab" id="reloj-grab" aria-live="off">0:00</span>
+              <span class="tenue" id="grabar-nota">Habla al menos 1 segundo; la grabación se corta sola a los 4:55 (el límite es 5 min).</span>
+            </div>
+          </div>
         </div>
-        <audio id="reproductor" preload="auto"></audio>
-        <details>
-          <summary>Ver los tramos como tabla</summary>
-          <div class="tablas-tramos" id="tablas-tramos"></div>
-        </details>
+
+        <div class="salida">
+          <p class="analizando" id="analizando" aria-live="polite"></p>
+          <div id="error-probar" role="alert"></div>
+          <div class="vacio" id="vacio">
+            <svg viewBox="0 0 36 28" aria-hidden="true"><rect x="0" y="2" width="16" height="9" fill="#0072b2"/><path d="M17 6.5v15" stroke="#1b2129" stroke-width="2"/><rect x="18" y="17" width="18" height="9" fill="#e69f00"/></svg>
+            <p>Elige una frase, sube un audio o graba. Verás la verdad y los dos modelos sobre los mismos carriles: español arriba, quechua abajo, y cada cambio de idioma como un escalón.</p>
+          </div>
+
+          <div class="resultado" id="resultado" hidden>
+            <div class="resultado-cab">
+              <h2 id="resultado-titulo">Resultado</h2>
+              <ul class="leyenda" aria-label="Leyenda">
+                <li><span class="muestra es"></span>Español</li>
+                <li><span class="muestra qu"></span>Quechua</li>
+                <li><span class="muestra nada"></span>Sin habla</li>
+                <li><span class="muestra marca-cambio"></span>Cambio de idioma</li>
+              </ul>
+            </div>
+            <div class="tablero" id="tablero">
+              <div class="transporte">
+                <button class="boton principal" id="reproducir" type="button" aria-label="Reproducir"><svg class="icono" aria-hidden="true"><use href="#i-correr"/></svg></button>
+                <p class="reloj" style="margin:0"><span id="reloj-actual">0:00,0</span> <span class="total">/ <span id="reloj-total">0:00,0</span></span></p>
+                <p class="atajos"><span><kbd>Espacio</kbd> reproduce o pausa</span><span><kbd>←</kbd> <kbd>→</kbd> sobre la onda: medio segundo</span></p>
+              </div>
+              <div class="pistas" id="pistas"></div>
+              <div class="globo" id="globo" aria-hidden="true"></div>
+            </div>
+            <audio id="reproductor" preload="auto"></audio>
+            <details>
+              <summary>Ver los tramos como tabla</summary>
+              <div class="tablas-tramos" id="tablas-tramos"></div>
+            </details>
+          </div>
+        </div>
       </div>
     </section>
   </main>
@@ -593,13 +643,13 @@ function pintarEstadoGlobal() {
   if (corrida && corrida.actual) {
     const p = estado.pasos.find((x) => x.id === corrida.actual);
     el.dataset.tono = 'corriendo';
-    el.innerHTML = `<strong>Corriendo</strong>${esc(p.nombre)}`;
+    el.innerHTML = `<strong>Corriendo</strong><span>${esc(p.nombre)}</span>`;
   } else if (estado.modelos.profundo && estado.modelos.no_supervisado) {
     el.dataset.tono = 'ok';
-    el.innerHTML = `<strong>Modelos listos</strong>Evaluado ${esc(estado.salidas.evaluar || 'nunca')}`;
+    el.innerHTML = `<strong>Modelos listos</strong><span>Evaluado ${esc(estado.salidas.evaluar || 'nunca')}</span>`;
   } else {
     el.dataset.tono = 'mal';
-    el.innerHTML = '<strong>Faltan modelos</strong>Ve a Entrenar';
+    el.innerHTML = '<strong>Faltan modelos</strong><span>Ve a Entrenar</span>';
   }
 }
 
@@ -647,9 +697,9 @@ async function cargarDatos() {
     const grupos = await Promise.all(['mixta', 'monolingue', 'control'].map((t) => pedir(`/api/frases?tipo=${t}`)));
     const items = grupos.flatMap((g) => g.slice(0, 2));
     $('datos-ejemplos').innerHTML = `<ul class="ejemplos">${items.map((f) => `
-      <li><div class="cab"><span><strong>${esc(f.id)}</strong> · ${{ mixta: 'mixta', monolingue: 'monolingüe', control: 'control' }[f.tipo]}</span><span class="tenue num">${segundos(f.duracion)}</span></div>
-      <audio controls preload="none" src="/audio/prueba/${encodeURIComponent(f.id)}.wav"></audio>
-      <a href="#probar" data-frase="${esc(f.id)}" data-tipo="${esc(f.tipo)}">Analizar esta frase</a></li>`).join('')}</ul>`;
+      <li><div class="cab"><span><strong>${esc(f.id)}</strong> · ${{ mixta: 'mixta', monolingue: 'monolingüe', control: 'control' }[f.tipo]} · <span class="tenue num">${segundos(f.duracion)}</span></span>
+      <a href="#probar" data-frase="${esc(f.id)}" data-tipo="${esc(f.tipo)}">Analizar esta frase</a></div>
+      <audio controls preload="none" src="/audio/prueba/${encodeURIComponent(f.id)}.wav"></audio></li>`).join('')}</ul>`;
   } catch (e) {
     $('datos-ejemplos').innerHTML = aviso(esc(e.message), e.estado === 409 ? '' : 'error');
   }
@@ -744,7 +794,7 @@ function escuchar() {
   fuente.onerror = () => {
     if (fuente.readyState !== EventSource.CLOSED) return;
     $('estado-global').dataset.tono = 'mal';
-    $('estado-global').innerHTML = '<strong>Sin conexión</strong>Reinicia npm run dev';
+    $('estado-global').innerHTML = '<strong>Sin conexión</strong><span>Reinicia npm run dev</span>';
   };
 }
 function manejar(e) {
@@ -876,35 +926,34 @@ async function cargarResultados() {
     const pc = (x) => `${fmt(100 * x, 1)} %`;
     html.push(`<p class="lead">El modelo profundo acierta el idioma en el <strong>${pc(p.profundo.trama.exactitud)}</strong> de las tramas de prueba; el no supervisado, en el <strong>${pc(p.no_supervisado.trama.exactitud)}</strong>.${p.linea_base ? ` Responder siempre la clase mayoritaria da el <strong>${pc(p.linea_base.trama.exactitud)}</strong>.` : ''}</p>`);
   }
-  html.push('<h2 style="margin-top:0">Comparación de modelos</h2>');
-  html.push(tablaModelos(p, [...FILAS_TRAMA,
+  // Cada bloque es un título y su contenido; en pantallas anchas van de a dos por fila.
+  const bloque = (titulo, cuerpo, ancho = false) => html.push(`<section class="bloque${ancho ? ' ancho' : ''}"><h2>${titulo}</h2>${cuerpo}</section>`);
+  html.push('<div class="rejilla dos">');
+  bloque('Comparación de modelos', tablaModelos(p, [...FILAS_TRAMA,
     ['Frases de control con algún cambio falso', (x) => x.falsos_cambios_control, false]],
-  'En negrita, el mejor de los dos modelos entrenados. La línea base siempre responde la clase mayoritaria y nunca marca cambios. En la última fila, menos es mejor.'));
-  html.push('<h2>F1 macro por tipo de frase</h2>');
-  html.push(tablaModelos(p, [['Mixta', (x) => x.por_tipo.mixta && x.por_tipo.mixta.trama.f1_macro],
+  'En negrita, el mejor de los dos modelos entrenados. La línea base siempre responde la clase mayoritaria y nunca marca cambios. En la última fila, menos es mejor.'), true);
+  bloque('F1 macro por tipo de frase', tablaModelos(p, [['Mixta', (x) => x.por_tipo.mixta && x.por_tipo.mixta.trama.f1_macro],
     ['Monolingüe', (x) => x.por_tipo.monolingue && x.por_tipo.monolingue.trama.f1_macro],
     ['Control', (x) => x.por_tipo.control && x.por_tipo.control.trama.f1_macro]], 'Por trama, dentro de cada tipo'));
-  html.push('<h2>Exactitud por duración del fragmento</h2>');
-  html.push(tablaModelos(p, [['Menos de 1 s', (x) => x.por_duracion['<1s']], ['De 1 a 2 s', (x) => x.por_duracion['1-2s']],
+  bloque('Exactitud por duración del fragmento', tablaModelos(p, [['Menos de 1 s', (x) => x.por_duracion['<1s']], ['De 1 a 2 s', (x) => x.por_duracion['1-2s']],
     ['2 s o más', (x) => x.por_duracion['>=2s']]], 'Tramas de habla agrupadas por la duración del fragmento original'));
   const v = m.no_supervisado_ventanas;
   if (v) {
-    html.push('<h2>Agrupamiento de ventanas (no supervisado)</h2>');
     const algs = Object.entries(v.por_algoritmo || {});
-    html.push(`<div class="tabla-caja"><table><caption>${v.n_ventanas.toLocaleString('es', { useGrouping: 'always' })} ventanas de 500 ms. Elegido: ${esc(ALGORITMO[v.algoritmo] || v.algoritmo)}, silueta con k = 2: ${fmt(v.silueta)}.</caption>
+    bloque('Agrupamiento de ventanas (no supervisado)', `<div class="tabla-caja"><table><caption>${v.n_ventanas.toLocaleString('es', { useGrouping: 'always' })} ventanas de 500 ms. Elegido: ${esc(ALGORITMO[v.algoritmo] || v.algoritmo)}, silueta con k = 2: ${fmt(v.silueta)}.</caption>
       <thead><tr><th scope="col">Algoritmo</th><th scope="col">ARI</th><th scope="col">NMI</th><th scope="col">Pureza</th></tr></thead>
       <tbody>${algs.map(([a, r]) => `<tr><th scope="row">${esc(ALGORITMO[a] || a)}</th><td>${fmt(r.ari)}</td><td>${fmt(r.nmi)}</td><td>${fmt(r.pureza)}</td></tr>`).join('')}</tbody></table></div>`);
   }
-  html.push('<h2>Grabaciones reales</h2>');
   if (m.reales && typeof m.reales === 'object') {
     const reales = Object.fromEntries(Object.entries(m.reales).filter(([k]) => k !== 'omitidos'));
-    html.push(tablaModelos(reales, FILAS_TRAMA, 'Audios de datos/reales/ con etiquetas de Audacity'));
-    if ((m.reales.omitidos || []).length) html.push(aviso(`Se omitieron ${m.reales.omitidos.length} grabaciones: ${m.reales.omitidos.map((o) => `${esc(o.archivo)} (${esc(o.motivo)})`).join('; ')}.`));
+    const omitidos = (m.reales.omitidos || []).length
+      ? aviso(`Se omitieron ${m.reales.omitidos.length} grabaciones: ${m.reales.omitidos.map((o) => `${esc(o.archivo)} (${esc(o.motivo)})`).join('; ')}.`) : '';
+    bloque('Grabaciones reales', tablaModelos(reales, FILAS_TRAMA, 'Audios de datos/reales/ con etiquetas de Audacity') + omitidos, true);
   } else {
-    html.push(`<p class="tenue">Esta corrida no tiene grabaciones reales etiquetadas en <code>datos/reales/</code>; solo hay resultados sobre frases sintéticas.</p>`);
+    bloque('Grabaciones reales', `<p class="tenue" style="margin:0">Esta corrida no tiene grabaciones reales etiquetadas en <code>datos/reales/</code>; solo hay resultados sobre frases sintéticas.</p>`);
   }
-  html.push('<h2>Gráficos</h2>');
-  html.push(`<div class="figuras">${FIGURAS.map(([archivo, texto]) => `<figure><a href="/resultados/figuras/${archivo}" target="_blank" rel="noopener" aria-label="${esc(texto)} (abre la imagen completa)"><img src="/resultados/figuras/${archivo}" alt="${esc(texto)}" loading="lazy" onerror="this.parentElement.replaceWith(Object.assign(document.createElement('p'),{className:'tenue',textContent:'Falta ${archivo}; corre la evaluación.'}))"></a><figcaption>${esc(texto)}</figcaption></figure>`).join('')}</div>`);
+  bloque('Gráficos', `<div class="figuras">${FIGURAS.map(([archivo, texto]) => `<figure><a href="/resultados/figuras/${archivo}" target="_blank" rel="noopener" aria-label="${esc(texto)} (abre la imagen completa)"><img src="/resultados/figuras/${archivo}" alt="${esc(texto)}" loading="lazy" onerror="this.parentElement.replaceWith(Object.assign(document.createElement('p'),{className:'tenue',textContent:'Falta ${archivo}; corre la evaluación.'}))"></a><figcaption>${esc(texto)}</figcaption></figure>`).join('')}</div>`, true);
+  html.push('</div>');
   caja.innerHTML = html.join('');
   contar(caja);
 }

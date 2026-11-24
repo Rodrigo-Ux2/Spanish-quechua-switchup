@@ -145,6 +145,27 @@ td.mejor { font-weight: 700; }
 tr.total td, tr.total th { font-weight: 700; background: #f4f5f1; }
 td.txt { font-family: var(--texto); font-size: 16px; text-align: left; }
 
+/* ---- Resultados ---- */
+.lead { font-size: clamp(1.25rem, 2vw, 1.5rem); line-height: 1.45; letter-spacing: -0.01em; max-width: 52ch; margin: 0 0 48px; }
+.lead strong { font-weight: 700; white-space: nowrap; font-variant-numeric: tabular-nums; }
+.metricas { --m: var(--tinta); }
+.metricas .m-profundo { --m: var(--tinta); }
+.metricas .m-no_supervisado { --m: #6f8890; }
+.metricas .m-linea_base { --m: #b4bcbf; }
+.metricas thead th { vertical-align: bottom; white-space: normal; min-width: 168px; text-align: left; }
+.metricas thead th:first-child { min-width: 0; }
+.metricas .clave { display: inline-block; width: 10px; height: 10px; margin-right: 8px; background: var(--m); }
+.metricas td { text-align: left; }
+.valor { display: grid; grid-template-columns: 52px minmax(72px, 1fr); align-items: center; gap: 12px; }
+.pista-m { height: 10px; background: var(--sin-habla); }
+.pista-m i { display: block; height: 100%; width: calc(var(--v) * 100%); background: var(--m); transform-origin: left; animation: crecer 700ms var(--ease-out) both; animation-delay: calc(var(--i, 0) * 40ms); }
+@keyframes crecer { from { transform: scaleX(0); } }
+td.mejor .cifra { font-weight: 700; }
+td.mejor .pista-m { box-shadow: 0 0 0 1px var(--tinta); }
+.figuras a { display: block; border-radius: var(--radio); }
+.figuras img { transition: opacity 150ms ease; }
+.figuras a:hover img { opacity: 0.85; }
+
 /* ---- Probar ---- */
 .fuente { display: grid; gap: 20px; padding: 24px; background: var(--superficie); border: 1px solid var(--linea); border-radius: var(--radio); }
 .fuente-cab { display: flex; flex-wrap: wrap; gap: 12px 24px; align-items: center; justify-content: space-between; }
@@ -290,7 +311,7 @@ figcaption { font-size: 14px; color: var(--tinta-2); margin-top: 8px; }
   .fuente, .tablero { padding: 16px; }
 }
 @media (prefers-reduced-motion: reduce) {
-  .carriles.revelar { animation: none; }
+  .carriles.revelar, .pista-m i { animation: none; }
   .analizando:not(:empty)::before { animation-duration: 2s; }
   .boton, .frases button { transition: background-color 150ms ease; }
   .boton:active:not(:disabled), .frases button:active { transform: none; }
@@ -726,16 +747,32 @@ $('cancelar').addEventListener('click', () => pedir('/api/cancelar', { method: '
 
 /* ================= Resultados ================= */
 const MODELOS = [['profundo', 'Profundo (CNN + BiLSTM)'], ['no_supervisado', 'No supervisado'], ['linea_base', 'Línea base (clase mayoritaria)']];
+// Cada celda lleva la cifra y una barra de 0 a 1; la cifra visible se anima y el lector de pantalla lee la final.
+function celda(v, clase, fila) {
+  if (v == null || Number.isNaN(v)) return `<td class="${clase}">—</td>`;
+  return `<td class="${clase}"><span class="valor" style="--v:${Math.max(0, Math.min(1, v)).toFixed(4)};--i:${fila}"><span class="solo-lector">${fmt(v)}</span><span class="cifra" aria-hidden="true" data-valor="${v}">${fmt(v)}</span><span class="pista-m" aria-hidden="true"><i></i></span></span></td>`;
+}
 function tablaModelos(bloque, filas, caption) {
   const modelos = MODELOS.filter(([id]) => bloque[id]);
-  const cuerpo = filas.map(([nombre, leer, mayorMejor = true]) => {
+  const cuerpo = filas.map(([nombre, leer, mayorMejor = true], f) => {
     const vals = modelos.map(([id]) => leer(bloque[id]));
     // La línea base no compite: nunca predice cambios, así que su precisión y sus falsos cambios son triviales.
     const validos = vals.filter((v, i) => v != null && modelos[i][0] !== 'linea_base');
     const mejor = validos.length ? (mayorMejor ? Math.max(...validos) : Math.min(...validos)) : null;
-    return `<tr><th scope="row">${nombre}</th>${vals.map((v) => `<td class="${v === mejor && modelos.length > 1 ? 'mejor' : ''}">${fmt(v)}</td>`).join('')}</tr>`;
+    return `<tr><th scope="row">${nombre}</th>${vals.map((v, i) => celda(v, `m-${modelos[i][0]}${v === mejor && modelos.length > 1 ? ' mejor' : ''}`, f)).join('')}</tr>`;
   }).join('');
-  return `<div class="tabla-caja"><table><caption>${caption}</caption><thead><tr><th scope="col">Métrica</th>${modelos.map(([, n]) => `<th scope="col">${n}</th>`).join('')}</tr></thead><tbody>${cuerpo}</tbody></table></div>`;
+  return `<div class="tabla-caja"><table class="metricas"><caption>${caption}</caption><thead><tr><th scope="col">Métrica</th>${modelos.map(([id, n]) => `<th scope="col" class="m-${id}"><span class="clave"></span>${n}</th>`).join('')}</tr></thead><tbody>${cuerpo}</tbody></table></div>`;
+}
+function contar(raiz) {
+  const cifras = [...raiz.querySelectorAll('.cifra[data-valor]')];
+  if (matchMedia('(prefers-reduced-motion: reduce)').matches || !cifras.length) return;
+  const t0 = performance.now(), dur = 700;
+  const paso = (ahora) => {
+    const f = Math.min(1, (ahora - t0) / dur), e = 1 - Math.pow(1 - f, 3);
+    for (const c of cifras) c.textContent = fmt(Number(c.dataset.valor) * e);
+    if (f < 1) requestAnimationFrame(paso);
+  };
+  requestAnimationFrame(paso);
 }
 const FILAS_TRAMA = [
   ['F1 macro por trama', (m) => m.trama.f1_macro],
@@ -765,6 +802,10 @@ async function cargarResultados() {
   const p = m.prueba;
   if (m.generado) $('resultados-bajada').innerHTML = `Métricas sobre la partición de prueba, leídas de <code>resultados/metricas.json</code> (evaluado el ${esc(m.generado.replace('T', ' a las '))}).`;
   const html = [];
+  if (p.profundo && p.no_supervisado) {
+    const pc = (x) => `${fmt(100 * x, 1)} %`;
+    html.push(`<p class="lead">El modelo profundo acierta el idioma en el <strong>${pc(p.profundo.trama.exactitud)}</strong> de las tramas de prueba; el no supervisado, en el <strong>${pc(p.no_supervisado.trama.exactitud)}</strong>.${p.linea_base ? ` Responder siempre la clase mayoritaria da el <strong>${pc(p.linea_base.trama.exactitud)}</strong>.` : ''}</p>`);
+  }
   html.push('<h2 style="margin-top:0">Comparación de modelos</h2>');
   html.push(tablaModelos(p, [...FILAS_TRAMA,
     ['Frases de control con algún cambio falso', (x) => x.falsos_cambios_control, false]],
@@ -793,8 +834,9 @@ async function cargarResultados() {
     html.push(`<p class="tenue">Esta corrida no tiene grabaciones reales etiquetadas en <code>datos/reales/</code>; solo hay resultados sobre frases sintéticas.</p>`);
   }
   html.push('<h2>Gráficos</h2>');
-  html.push(`<div class="figuras">${FIGURAS.map(([archivo, texto]) => `<figure><img src="/resultados/figuras/${archivo}" alt="${esc(texto)}" loading="lazy" onerror="this.replaceWith(Object.assign(document.createElement('p'),{className:'tenue',textContent:'Falta ${archivo}; corre la evaluación.'}))"><figcaption>${esc(texto)}</figcaption></figure>`).join('')}</div>`);
+  html.push(`<div class="figuras">${FIGURAS.map(([archivo, texto]) => `<figure><a href="/resultados/figuras/${archivo}" target="_blank" rel="noopener" aria-label="${esc(texto)} (abre la imagen completa)"><img src="/resultados/figuras/${archivo}" alt="${esc(texto)}" loading="lazy" onerror="this.parentElement.replaceWith(Object.assign(document.createElement('p'),{className:'tenue',textContent:'Falta ${archivo}; corre la evaluación.'}))"></a><figcaption>${esc(texto)}</figcaption></figure>`).join('')}</div>`);
   caja.innerHTML = html.join('');
+  contar(caja);
 }
 
 /* ================= Probar ================= */

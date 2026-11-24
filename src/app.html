@@ -93,6 +93,8 @@ main { padding: 56px clamp(16px, 4vw, 64px) 112px; min-width: 0; }
 .vista { max-width: 1160px; }
 .cabecera { margin-bottom: 40px; }
 h1 { font-size: clamp(2.25rem, 4.6vw, 3.5rem); line-height: 1.02; letter-spacing: -0.03em; font-weight: 700; margin: 0 0 16px; text-wrap: balance; }
+h1[data-n] { display: flex; align-items: center; gap: 0.3em; }
+h1[data-n]::before { content: attr(data-n) / ""; display: grid; place-items: center; flex: none; width: 1.3em; height: 1.3em; border-radius: var(--radio); background: var(--pizarra); color: var(--tiza); font-size: 0.55em; font-weight: 700; letter-spacing: 0; }
 h2 { font-size: 1.375rem; line-height: 1.25; letter-spacing: -0.015em; font-weight: 700; margin: 64px 0 16px; text-wrap: balance; }
 h3 { font-size: 1rem; font-weight: 700; margin: 0 0 8px; }
 .bajada { margin: 0; max-width: 64ch; color: var(--tinta-2); font-size: 18px; line-height: 1.55; }
@@ -188,7 +190,8 @@ td.mejor .pista-m { box-shadow: 0 0 0 1px var(--tinta); }
 
 /* ---- Probar ---- */
 .fuente { display: grid; gap: 20px; padding: 24px; background: var(--superficie); border: 1px solid var(--linea); border-radius: var(--radio); }
-.fuente-cab { display: flex; flex-wrap: wrap; gap: 12px 24px; align-items: center; justify-content: space-between; }
+.fuente-cab { display: flex; flex-wrap: wrap; gap: 12px 16px; align-items: center; }
+.fuente-cab .atajos { margin-left: auto; }
 .atajos { margin: 0; font-size: 14px; color: var(--tinta-2); display: flex; flex-wrap: wrap; gap: 4px 16px; }
 kbd { display: inline-block; min-width: 22px; text-align: center; font: 600 13px/1 var(--mono); padding: 4px 6px 3px; border: 1px solid var(--linea-fuerte); border-bottom-width: 2px; border-radius: var(--radio); background: var(--papel); color: var(--tinta); }
 .frases { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(128px, 1fr)); gap: 8px; }
@@ -384,7 +387,7 @@ figcaption { font-size: 14px; color: var(--tinta-2); margin-top: 8px; }
     <!-- ================= DATOS ================= -->
     <section class="vista" id="vista-datos" hidden aria-labelledby="t-datos">
       <div class="cabecera">
-        <h1 id="t-datos">Datos</h1>
+        <h1 id="t-datos" data-n="1">Datos</h1>
         <p class="bajada">Clips validados de Common Voice por idioma y partición, y frases sintéticas armadas con ellos. Ningún hablante aparece en dos particiones.</p>
       </div>
       <ul class="chequeos" id="chequeos"></ul>
@@ -399,7 +402,7 @@ figcaption { font-size: 14px; color: var(--tinta-2); margin-top: 8px; }
     <!-- ================= ENTRENAR ================= -->
     <section class="vista" id="vista-entrenar" hidden aria-labelledby="t-entrenar">
       <div class="cabecera">
-        <h1 id="t-entrenar">Entrenar</h1>
+        <h1 id="t-entrenar" data-n="2">Entrenar</h1>
         <p class="bajada">Corre el pipeline completo o un paso suelto. La corrida sigue aunque cierres o recargues la pestaña; al volver, el registro se muestra entero.</p>
       </div>
       <div class="resumen-pasos">
@@ -425,7 +428,7 @@ figcaption { font-size: 14px; color: var(--tinta-2); margin-top: 8px; }
     <!-- ================= RESULTADOS ================= -->
     <section class="vista" id="vista-resultados" hidden aria-labelledby="t-resultados">
       <div class="cabecera">
-        <h1 id="t-resultados">Resultados</h1>
+        <h1 id="t-resultados" data-n="3">Resultados</h1>
         <p class="bajada" id="resultados-bajada">Métricas sobre la partición de prueba, leídas de <code>resultados/metricas.json</code>.</p>
       </div>
       <div id="resultados-contenido"></div>
@@ -434,28 +437,28 @@ figcaption { font-size: 14px; color: var(--tinta-2); margin-top: 8px; }
     <!-- ================= PROBAR ================= -->
     <section class="vista" id="vista-probar" hidden aria-labelledby="t-probar">
       <div class="cabecera">
-        <h1 id="t-probar">Probar</h1>
+        <h1 id="t-probar" data-n="4">Probar</h1>
         <p class="bajada">Elige una frase de prueba, sube un audio o graba con el micrófono. Cada modelo marca qué tramos son español y cuáles quechua.</p>
       </div>
       <div id="avisos-probar"></div>
       <div class="fuente">
-        <fieldset class="segmentos" id="modo">
-          <legend>Origen del audio</legend>
-          <label><input type="radio" name="modo" value="frase" checked><span>Frase de prueba</span></label>
-          <label><input type="radio" name="modo" value="archivo"><span>Subir archivo</span></label>
-          <label><input type="radio" name="modo" value="grabar"><span>Grabar</span></label>
-        </fieldset>
+        <div class="fuente-cab">
+          <fieldset class="segmentos" id="modo">
+            <legend>Origen del audio</legend>
+            <label><input type="radio" name="modo" value="frase" checked><span>Frase de prueba</span></label>
+            <label><input type="radio" name="modo" value="archivo"><span>Subir archivo</span></label>
+            <label><input type="radio" name="modo" value="grabar"><span>Grabar</span></label>
+          </fieldset>
+          <fieldset class="segmentos" id="tipo-frase">
+            <legend>Tipo de frase</legend>
+            <label><input type="radio" name="tipo" value="mixta" checked><span>Mixtas</span></label>
+            <label><input type="radio" name="tipo" value="monolingue"><span>Monolingües</span></label>
+            <label><input type="radio" name="tipo" value="control"><span>Control</span></label>
+          </fieldset>
+          <p class="atajos" id="atajos-frase"><span><kbd>J</kbd> <kbd>K</kbd> frase anterior o siguiente</span></p>
+        </div>
 
-        <div id="panel-frase" style="display:grid;gap:16px">
-          <div class="fuente-cab">
-            <fieldset class="segmentos" id="tipo-frase">
-              <legend>Tipo de frase</legend>
-              <label><input type="radio" name="tipo" value="mixta" checked><span>Mixtas</span></label>
-              <label><input type="radio" name="tipo" value="monolingue"><span>Monolingües</span></label>
-              <label><input type="radio" name="tipo" value="control"><span>Control</span></label>
-            </fieldset>
-            <p class="atajos"><span><kbd>J</kbd> <kbd>K</kbd> frase anterior o siguiente</span></p>
-          </div>
+        <div id="panel-frase">
           <ul class="frases" id="frases" aria-label="Frases de prueba"></ul>
         </div>
 
@@ -922,6 +925,7 @@ function pintarAvisosProbar() {
 for (const input of document.querySelectorAll('#modo input')) {
   input.addEventListener('change', () => {
     for (const m of ['frase', 'archivo', 'grabar']) $(`panel-${m}`).hidden = input.value !== m;
+    $('tipo-frase').hidden = $('atajos-frase').hidden = input.value !== 'frase';
   });
 }
 for (const input of document.querySelectorAll('#tipo-frase input')) input.addEventListener('change', () => cargarFrases());
@@ -1223,6 +1227,9 @@ function mostrar(datos, src, titulo) {
   medirCabezal();
   moverCabezal();
   cargarOnda(src, turno);
+  if ($('tablero').getBoundingClientRect().bottom > innerHeight) {  // que los carriles entren en pantalla al analizar
+    $('resultado').scrollIntoView({ block: 'nearest', behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
+  }
 }
 // Geometría del cabezal: una sola línea que cruza la onda y los tres carriles.
 function medirCabezal() {

@@ -181,6 +181,8 @@ Neutros fríos de papel y pizarra, con los dos colores de idioma Okabe-Ito como 
 ### Named Rules
 **La regla del idioma con nombre.** El azul y el ámbar nunca aparecen solos: cada uso lleva la etiqueta ES/QU o el nombre del idioma al lado.
 
+**La regla del fondo que escucha.** El único uso del azul o el ámbar fuera de los datos es el tinte de los renglones del fondo mientras suena audio, y repite el idioma que la pista ya muestra con su nombre.
+
 **La regla de los colores reservados.** El ámbar significa solo quechua. El azul significa español en los datos y, en el armazón, únicamente foco del teclado y paso en curso. Los modelos y las particiones usan neutros.
 
 ## Typography
@@ -204,6 +206,9 @@ Neutros fríos de papel y pizarra, con los dos colores de idioma Okabe-Ito como 
 ## Layout
 
 Barra superior fija de 56px y contenido a lo ancho, con ancho máximo de 1440px y márgenes de clamp(16px, 3vw, 32px). Es una herramienta, no un documento: cada vista abre con una cabecera de una sola fila (título, bajada y acciones o chequeos a la derecha, sobre una línea fina) y debajo reparte sus bloques en rejilla. Desde 1100px, Datos pone gráfico y tabla a la izquierda y las frases de ejemplo a la derecha, Entrenar pone los pasos a la izquierda y el registro fijo a la derecha, y Resultados va de a dos bloques por fila (la comparación de modelos y los gráficos a lo ancho). Desde 1200px, Probar deja la barra de origen arriba, la lista de frases fija en una columna de 420px y los carriles a la derecha. Ritmo en múltiplos de 4. Las filas de carriles usan una rejilla de tres columnas: nombre (200px), guía ES/QU (28px) y línea de tiempo fluida. Por debajo de 880px la barra baja la navegación a una segunda fila y cada carril pone su nombre arriba; por debajo de 480px las pestañas pierden el cuadro de número. Las tablas anchas se desplazan dentro de su caja, nunca la página.
+
+### Background
+Cuaderno pautado: un lienzo fijo detrás de todo dibuja renglones de 1px cada 32px en tinta al 6 % y, desde 881px, una línea de margen 12px a la izquierda del contenido. Los paneles opacos lo tapan; se ve en los márgenes y entre bloques. Está quieto salvo cuando suena audio en Probar: los renglones ondulan (hasta 6px) con el volumen del instante y se tiñen del idioma bajo el cabezal de la primera pista, que la misma pista nombra con texto, y vuelven a quedarse quietos al pausar. Con movimiento reducido el color cambia pero no ondulan.
 
 ## Elevation & Depth
 

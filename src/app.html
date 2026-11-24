@@ -44,6 +44,7 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 ::selection { background: var(--es-suave); color: var(--tinta); }
+#fondo { position: fixed; inset: 0; width: 100%; height: 100%; z-index: -1; pointer-events: none; }  /* cuaderno pautado; ver «Fondo» en el script */
 a { color: var(--tinta); text-underline-offset: 3px; text-decoration-thickness: 1px; text-decoration-color: var(--linea-fuerte); transition: text-decoration-color 150ms ease; }
 a:hover { text-decoration-color: currentColor; }
 code { font-family: var(--mono); font-size: 0.9em; }
@@ -392,6 +393,7 @@ figcaption { font-size: 14px; color: var(--tinta-2); margin-top: 8px; }
 </style>
 </head>
 <body>
+<canvas id="fondo" aria-hidden="true"></canvas>
 <svg width="0" height="0" style="position:absolute" aria-hidden="true">
   <symbol id="i-subir" viewBox="0 0 24 24"><path d="M12 16V4m0 0-5 5m5-5 5 5M4 16v3a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-3"/></symbol>
   <symbol id="i-micro" viewBox="0 0 24 24"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></symbol>
@@ -1336,6 +1338,55 @@ $('reproductor').addEventListener('pause', pintarReproducir);
 for (const ev of ['seeked', 'timeupdate', 'loadedmetadata']) $('reproductor').addEventListener(ev, moverCabezal);
 $('reproducir').addEventListener('click', alternar);
 window.addEventListener('resize', () => { medirCabezal(); moverCabezal(); dibujarOnda(); });
+
+/* ================= Fondo: cuaderno pautado que ondula con el audio ================= */
+// Quieto mientras no suena nada. Al reproducir en Probar, los renglones ondulan con el volumen
+// del instante y se tiñen del idioma bajo el cabezal (el mismo que la pista nombra con texto).
+const fondo = $('fondo'), lapiz = fondo.getContext('2d');
+const RENGLON = 32, TINTA = [27, 33, 41], COLOR_IDIOMA = { es: [0, 114, 178], qu: [230, 159, 0] };
+const sinMovimiento = matchMedia('(prefers-reduced-motion: reduce)');
+let nivel = 0, tono = [...TINTA], fondoVivo = false;
+function dibujarFondo(t = 0) {
+  const dpr = devicePixelRatio || 1, w = innerWidth, h = innerHeight;
+  if (fondo.width !== Math.round(w * dpr) || fondo.height !== Math.round(h * dpr)) {
+    fondo.width = Math.round(w * dpr);
+    fondo.height = Math.round(h * dpr);
+  }
+  lapiz.setTransform(dpr, 0, 0, dpr, 0, 0);
+  lapiz.clearRect(0, 0, w, h);
+  const amp = sinMovimiento.matches ? 0 : 6 * nivel;
+  lapiz.lineWidth = 1;
+  lapiz.strokeStyle = `rgba(${tono.map(Math.round).join(',')}, ${(0.06 + 0.2 * nivel).toFixed(3)})`;
+  lapiz.beginPath();
+  for (let y = RENGLON - 0.5, i = 0; y < h; y += RENGLON, i++) {
+    lapiz.moveTo(0, y);
+    if (amp < 0.05) { lapiz.lineTo(w, y); continue; }
+    for (let x = 8; x <= w + 8; x += 8) lapiz.lineTo(x, y + amp * Math.sin(x / 40 - t / 250 + i * 0.5));
+  }
+  if (w > 880) {  // línea de margen, a la izquierda del contenido
+    const m = document.querySelector('main');
+    const x = Math.round(m.getBoundingClientRect().left + parseFloat(getComputedStyle(m).paddingLeft) - 12) + 0.5;
+    lapiz.moveTo(x, 0);
+    lapiz.lineTo(x, h);
+  }
+  lapiz.stroke();
+}
+function animarFondo(t) {
+  const r = $('reproductor');
+  const sonando = Boolean(actual && actual.picos && !r.paused);
+  const meta = sonando ? actual.picos[Math.min(actual.picos.length - 1, Math.floor((r.currentTime / actual.dur) * actual.picos.length))] : 0;
+  nivel += (meta - nivel) * 0.12;
+  const destino = (sonando && COLOR_IDIOMA[actual.pistas[0].ultimo]) || TINTA;
+  tono = tono.map((c, k) => c + (destino[k] - c) * 0.08);
+  dibujarFondo(t);
+  if (sonando || nivel > 0.005 || tono.some((c, k) => Math.abs(c - TINTA[k]) > 1)) requestAnimationFrame(animarFondo);
+  else { fondoVivo = false; nivel = 0; tono = [...TINTA]; dibujarFondo(); }
+}
+$('reproductor').addEventListener('play', () => {
+  if (!fondoVivo) { fondoVivo = true; requestAnimationFrame(animarFondo); }
+});
+addEventListener('resize', () => { if (!fondoVivo) dibujarFondo(); });
+dibujarFondo();
 
 // Clic o arrastre sobre la onda o un carril: lleva el audio a ese instante.
 let arrastre = false;

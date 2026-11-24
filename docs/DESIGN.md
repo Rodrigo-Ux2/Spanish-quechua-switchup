@@ -232,7 +232,7 @@ Un solo radio de 6px para botones, segmentos, tablas, paneles, chips y sellos. L
 - **Style:** sello con borde, ícono de 16px y texto 600. Hecho en verde suave, error en rojo suave, en curso en azul con cifras tabulares, en cola neutro. El estado nunca desaparece; cambia de sello.
 
 ### Navigation
-- **Style:** barra superior de pizarra, fija; marca a la izquierda, las cuatro lecciones en fila con su número en un cuadro de 22px, y el estado de los modelos a la derecha. La activa rellena el cuadro de tiza y el fondo de pizarra activa; texto 700.
+- **Style:** barra superior de pizarra, fija; marca a la izquierda, las cuatro lecciones centradas en fila con su número en un cuadro de 22px, y el estado de los modelos a la derecha. Con ratón y desde 881px, al bajar más de 56px la barra se desvanece (400ms, tras 800ms quieta) y vuelve en 200ms al pasar el puntero o el foco del teclado por ella; arriba de la página y en pantallas táctiles queda siempre visible. La activa rellena el cuadro de tiza y el fondo de pizarra activa; texto 700.
 
 ### Lane timeline (componente firma)
 Dos carriles por fila (español arriba, quechua abajo) sobre fondo sin habla, tramos de 26px de alto, y cada cambio como una línea vertical de tinta con un círculo de intercambio en medio. Encima, la onda del audio en dos capas (gris y tinta) que se recorta según lo reproducido. Un solo cabezal de 2px cruza la onda y todas las filas. Clic o arrastre para buscar, flechas sobre la onda para avanzar medio segundo, Espacio para reproducir y J/K para cambiar de frase. Al pasar sobre un tramo, un globo muestra su intervalo y cuánto coincide con la verdad.

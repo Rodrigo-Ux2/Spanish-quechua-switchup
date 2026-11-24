@@ -39,7 +39,7 @@
 html { -webkit-text-size-adjust: 100%; }
 body {
   margin: 0; background: var(--papel); color: var(--tinta);
-  font: 16px/1.55 var(--texto); caret-color: var(--es);
+  font: 16px/1.55 var(--texto); caret-color: var(--es); font-variant-numeric: tabular-nums;
   scrollbar-color: var(--linea-fuerte) transparent; accent-color: var(--tinta);
   -webkit-font-smoothing: antialiased;
 }
@@ -53,7 +53,7 @@ code { font-family: var(--mono); font-size: 0.9em; }
 .saltar { position: absolute; left: 16px; top: -48px; background: var(--superficie); padding: 8px 12px; z-index: 10; border-radius: var(--radio); }
 .saltar:focus { top: 8px; }
 .icono { width: 20px; height: 20px; flex: none; fill: none; stroke: currentColor; stroke-width: 1.75; stroke-linecap: round; stroke-linejoin: round; }
-.num { font-family: var(--mono); font-variant-numeric: tabular-nums; }
+.num { font-family: var(--texto); font-variant-numeric: tabular-nums; }
 
 /* ---- Armazón: riel pizarra + contenido ---- */
 .app { min-height: 100vh; display: grid; grid-template-columns: 248px minmax(0, 1fr); }
@@ -72,7 +72,7 @@ code { font-family: var(--mono); font-size: 0.9em; }
 .nav a::before {
   counter-increment: leccion; content: counter(leccion);
   display: grid; place-items: center; width: 26px; height: 26px; flex: none; border-radius: var(--radio);
-  font: 600 14px/1 var(--mono); color: var(--tiza-tenue); box-shadow: inset 0 0 0 1px #4f666c;
+  font: 600 14px/1 var(--texto); color: var(--tiza-tenue); box-shadow: inset 0 0 0 1px #4f666c;
   transition: background-color 150ms ease, color 150ms ease, box-shadow 150ms ease;
 }
 .nav a:hover { background: var(--pizarra-activo); }
@@ -134,7 +134,7 @@ p { max-width: 70ch; }
 table { border-collapse: collapse; width: 100%; }
 caption { text-align: left; padding: 14px 16px 2px; color: var(--tinta-2); font-size: 14px; caption-side: top; }
 th, td { padding: 12px 16px; text-align: right; border-bottom: 1px solid var(--linea); white-space: nowrap; }
-td { font-family: var(--mono); font-variant-numeric: tabular-nums; font-size: 15px; }
+td { font-family: var(--texto); font-variant-numeric: tabular-nums; font-size: 15px; }
 th:first-child, td:first-child { text-align: left; }
 thead th { font-size: 14px; font-weight: 600; color: var(--tinta-2); }
 tbody tr:last-child td, tbody tr:last-child th { border-bottom: 0; }
@@ -144,6 +144,24 @@ tbody tr:hover { background: #f6f7f4; }
 td.mejor { font-weight: 700; }
 tr.total td, tr.total th { font-weight: 700; background: #f4f5f1; }
 td.txt { font-family: var(--texto); font-size: 16px; text-align: left; }
+
+/* ---- Datos ---- */
+.horas { display: grid; gap: 14px; margin-top: 40px; }
+.horas-fila { display: grid; grid-template-columns: 88px minmax(0, 1fr) 72px; align-items: center; gap: 16px; --c: var(--es); }
+.horas-fila.qu { --c: var(--qu); }
+.horas-nombre { font-weight: 700; }
+.horas-barra { display: flex; gap: 2px; height: 36px; width: calc(var(--t) * 100%); transform-origin: left; animation: crecer 700ms var(--ease-out) both; }
+.parte { min-width: 3px; display: flex; align-items: center; padding-left: 10px; background: var(--c); font: 700 13px/1 var(--texto); color: #fff; white-space: nowrap; overflow: hidden; }
+.qu .parte { color: var(--tinta); }
+.parte.p1 { opacity: 0.55; }
+.parte.p2 { opacity: 0.3; }
+.horas-total { font-weight: 700; text-align: right; }
+.horas .leyenda { margin-left: 104px; }
+.muestra.p0 { background: var(--tinta-2); }
+.muestra.p1 { background: var(--tinta-2); opacity: 0.55; }
+.muestra.p2 { background: var(--tinta-2); opacity: 0.3; }
+.ejemplos .cab strong { font-family: var(--mono); }
+.ejemplos audio { width: 100%; }
 
 /* ---- Resultados ---- */
 .lead { font-size: clamp(1.25rem, 2vw, 1.5rem); line-height: 1.45; letter-spacing: -0.01em; max-width: 52ch; margin: 0 0 48px; }
@@ -179,7 +197,7 @@ kbd { display: inline-block; min-width: 22px; text-align: center; font: 600 13px
   transition: transform 160ms var(--ease-out), border-color 150ms ease, background-color 150ms ease, color 150ms ease;
 }
 .frases .id { font-family: var(--mono); font-weight: 600; }
-.frases .dur { font: 13px var(--mono); color: var(--tinta-2); }
+.frases .dur { font: 13px var(--texto); color: var(--tinta-2); }
 .frases .largo { grid-column: 1 / -1; height: 3px; background: var(--linea); }
 .frases .largo i { display: block; height: 100%; width: calc(var(--d) * 100%); background: var(--tinta-3); transition: background-color 150ms ease; }
 .frases button:hover { border-color: var(--tinta-3); background: var(--superficie); }
@@ -245,13 +263,13 @@ kbd { display: inline-block; min-width: 22px; text-align: center; font: 600 13px
 .onda:focus-visible { outline-offset: 6px; }
 .cabezal { position: absolute; top: 0; left: 0; width: 2px; margin-left: -1px; background: var(--tinta); pointer-events: none; will-change: transform; z-index: 2; }
 .cabezal::before { content: ""; position: absolute; top: -7px; left: -5px; border: 6px solid transparent; border-top-color: var(--tinta); border-bottom: 0; }
-.eje { position: relative; height: 20px; font: 12px var(--mono); color: var(--tinta-3); font-variant-numeric: tabular-nums; }
+.eje { position: relative; height: 20px; font: 12px var(--texto); color: var(--tinta-3); font-variant-numeric: tabular-nums; }
 .eje span { position: absolute; top: 2px; transform: translateX(-50%); white-space: nowrap; }
 .eje span:first-child { transform: none; }
 .globo { position: absolute; z-index: 3; left: 0; top: 0; pointer-events: none; padding: 8px 12px; background: var(--tinta); color: #fff; border-radius: var(--radio); font-size: 14px; line-height: 1.4; white-space: nowrap; transform: translate(-50%, calc(-100% - 12px)); opacity: 0; transition: opacity 120ms ease; box-shadow: 0 4px 14px rgba(27, 33, 41, 0.18); }
 .globo.visible { opacity: 1; }
 .globo strong { display: block; }
-.globo span { color: var(--tiza-tenue); font-family: var(--mono); font-size: 13px; }
+.globo span { color: var(--tiza-tenue); font-family: var(--texto); font-size: 13px; }
 details { border-top: 1px solid var(--linea); padding-top: 12px; }
 summary { cursor: pointer; font-weight: 600; }
 .tablas-tramos { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px; margin-top: 16px; }
@@ -264,7 +282,7 @@ summary { cursor: pointer; font-weight: 600; }
 .riel-pasos li { position: relative; flex-basis: 0; min-width: 6px; background: var(--sin-habla); overflow: hidden; display: flex; align-items: center; justify-content: flex-start; }
 .riel-pasos li i { position: absolute; inset: 0; background: var(--m, var(--linea-fuerte)); transform-origin: left; transform: scaleX(var(--avance, 1)); transition: transform 900ms linear, background-color 200ms ease; }
 .riel-pasos li { container-type: inline-size; }
-.riel-pasos li span { position: relative; padding-left: 10px; font: 700 13px/1 var(--mono); color: var(--tinta); }
+.riel-pasos li span { position: relative; padding-left: 10px; font: 700 13px/1 var(--texto); color: var(--tinta); }
 @container (max-width: 28px) { .riel-pasos li span { display: none; } }
 .riel-pasos li[data-tono="ok"] { --m: var(--pizarra); }
 .riel-pasos li[data-tono="ok"] span { color: #fff; }
@@ -277,7 +295,7 @@ summary { cursor: pointer; font-weight: 600; }
 .pasos { list-style: none; margin: 0; padding: 0; border: 1px solid var(--linea); border-radius: var(--radio); background: var(--superficie); }
 .paso { display: grid; grid-template-columns: 32px minmax(0, 1fr) auto auto; gap: 8px 16px; align-items: center; padding: 16px 20px; border-bottom: 1px solid var(--linea); transition: background-color 200ms ease; }
 .paso:last-child { border-bottom: 0; }
-.paso-n { font: 700 15px/1 var(--mono); color: var(--tinta-2); }
+.paso-n { font: 700 15px/1 var(--texto); color: var(--tinta-2); }
 .paso-nombre { font-weight: 700; }
 .paso-meta { font-size: 14px; color: var(--tinta-2); }
 .estado-paso { display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px 4px 8px; font-size: 14px; font-weight: 600; white-space: nowrap; color: var(--tinta-2); border: 1px solid var(--linea); border-radius: var(--radio); background: var(--papel); }
@@ -285,7 +303,7 @@ summary { cursor: pointer; font-weight: 600; }
 .paso[data-tono="ok"] .estado-paso { color: var(--ok); background: var(--ok-fondo); border-color: #bcdcc8; }
 .paso[data-tono="mal"] .estado-paso { color: var(--error); background: var(--error-fondo); border-color: #eec7bf; }
 .paso[data-tono="activo"] { background: var(--es-suave); }
-.paso[data-tono="activo"] .estado-paso { color: var(--es); background: var(--superficie); border-color: #a9cbe3; font-family: var(--mono); font-variant-numeric: tabular-nums; }
+.paso[data-tono="activo"] .estado-paso { color: var(--es); background: var(--superficie); border-color: #a9cbe3; font-family: var(--texto); font-variant-numeric: tabular-nums; }
 .progreso { grid-column: 2 / -1; height: 4px; background: var(--superficie); overflow: hidden; }
 .progreso div { height: 100%; width: 100%; background: var(--es); transform-origin: left; transform: scaleX(0); transition: transform 900ms linear; }
 .consola-cab { display: flex; justify-content: space-between; align-items: baseline; gap: 16px; margin: 48px 0 12px; }
@@ -328,7 +346,7 @@ figcaption { font-size: 14px; color: var(--tinta-2); margin-top: 8px; }
   .fuente, .tablero { padding: 16px; }
 }
 @media (prefers-reduced-motion: reduce) {
-  .carriles.revelar, .pista-m i { animation: none; }
+  .carriles.revelar, .pista-m i, .horas-barra { animation: none; }
   .analizando:not(:empty)::before { animation-duration: 2s; }
   .boton, .frases button { transition: background-color 150ms ease; }
   .boton:active:not(:disabled), .frases button:active { transform: none; }
@@ -371,6 +389,7 @@ figcaption { font-size: 14px; color: var(--tinta-2); margin-top: 8px; }
         <p class="bajada">Clips validados de Common Voice por idioma y partición, y frases sintéticas armadas con ellos. Ningún hablante aparece en dos particiones.</p>
       </div>
       <ul class="chequeos" id="chequeos"></ul>
+      <div id="datos-grafico"></div>
       <h2>Clips por idioma y partición</h2>
       <div id="datos-tabla"></div>
       <h2>Frases sintéticas de prueba</h2>
@@ -600,6 +619,18 @@ async function cargarDatos() {
       }
       filas.push(`<tr class="total"><th scope="row">${NOMBRE_IDIOMA[idioma] || esc(idioma)}</th><td class="txt">Total</td><td>${tot.clips.toLocaleString('es', { useGrouping: 'always' })}</td><td>${fmt(tot.horas, 2)}</td><td>${tot.hablantes}</td></tr>`);
     }
+    // Horas por idioma, partidas por partición; la escala es la del idioma con más horas.
+    const PARTES = [['entrenamiento', 'Entrenamiento'], ['validacion', 'Validación'], ['prueba', 'Prueba']];
+    const horas = Object.entries(datos).map(([idioma, parts]) => [idioma, parts, PARTES.reduce((s, [k]) => s + (parts[k] ? parts[k].horas : 0), 0)]);
+    const tope = Math.max(...horas.map(([, , h]) => h), 1e-9);
+    $('datos-grafico').innerHTML = `<div class="horas" aria-hidden="true">${horas.map(([idioma, parts, total]) => `
+      <div class="horas-fila ${esc(idioma)}">
+        <span class="horas-nombre">${NOMBRE_IDIOMA[idioma] || esc(idioma)}</span>
+        <div class="horas-barra" style="--t:${(total / tope).toFixed(4)}">${PARTES.filter(([k]) => parts[k]).map(([k, n], j) =>
+          `<span class="parte p${j}" style="flex-grow:${parts[k].horas.toFixed(3)}" title="${n}: ${fmt(parts[k].horas, 2)} h">${j === 0 ? `${fmt(parts[k].horas, 1)} h` : ''}</span>`).join('')}</div>
+        <span class="horas-total num">${fmt(total, 1)} h</span>
+      </div>`).join('')}
+      <ul class="leyenda"><li><span class="muestra p0"></span>Entrenamiento</li><li><span class="muestra p1"></span>Validación</li><li><span class="muestra p2"></span>Prueba</li></ul></div>`;
     $('datos-tabla').innerHTML = `<div class="tabla-caja"><table><thead><tr><th scope="col">Idioma</th><th scope="col" style="text-align:left">Partición</th><th scope="col">Clips</th><th scope="col">Horas</th><th scope="col">Hablantes</th></tr></thead><tbody>${filas.join('')}</tbody></table></div>`;
   } catch (e) {
     $('datos-tabla').innerHTML = e.estado === 404

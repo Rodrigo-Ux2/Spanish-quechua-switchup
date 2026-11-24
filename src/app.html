@@ -258,24 +258,41 @@ summary { cursor: pointer; font-weight: 600; }
 
 /* ---- Entrenar ---- */
 .resumen-pasos { display: flex; flex-wrap: wrap; gap: 16px 32px; align-items: center; margin-bottom: 24px; }
+.riel-figura { margin: 32px 0 24px; padding: 0; background: none; border: 0; }
+.riel-figura figcaption { margin-top: 10px; }
+.riel-pasos { list-style: none; margin: 0; padding: 0; display: flex; gap: 3px; height: 40px; }
+.riel-pasos li { position: relative; flex-basis: 0; min-width: 6px; background: var(--sin-habla); overflow: hidden; display: flex; align-items: center; justify-content: flex-start; }
+.riel-pasos li i { position: absolute; inset: 0; background: var(--m, var(--linea-fuerte)); transform-origin: left; transform: scaleX(var(--avance, 1)); transition: transform 900ms linear, background-color 200ms ease; }
+.riel-pasos li { container-type: inline-size; }
+.riel-pasos li span { position: relative; padding-left: 10px; font: 700 13px/1 var(--mono); color: var(--tinta); }
+@container (max-width: 28px) { .riel-pasos li span { display: none; } }
+.riel-pasos li[data-tono="ok"] { --m: var(--pizarra); }
+.riel-pasos li[data-tono="ok"] span { color: #fff; }
+.riel-pasos li[data-tono="mal"] { --m: var(--error); }
+.riel-pasos li[data-tono="mal"] span { color: #fff; }
+.riel-pasos li[data-tono="neutro"] { --m: transparent; }
+.riel-pasos li[data-tono="activo"] { --m: var(--es); }
+.riel-pasos li[data-tono="activo"]::after { content: ""; position: absolute; inset: 0; background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.45), transparent); transform: translateX(-100%); animation: barrido 1.8s ease-in-out infinite; }
+@keyframes barrido { to { transform: translateX(100%); } }
 .pasos { list-style: none; margin: 0; padding: 0; border: 1px solid var(--linea); border-radius: var(--radio); background: var(--superficie); }
-.paso { display: grid; grid-template-columns: 32px minmax(0, 1fr) auto auto; gap: 8px 16px; align-items: center; padding: 16px 20px; border-bottom: 1px solid var(--linea); }
+.paso { display: grid; grid-template-columns: 32px minmax(0, 1fr) auto auto; gap: 8px 16px; align-items: center; padding: 16px 20px; border-bottom: 1px solid var(--linea); transition: background-color 200ms ease; }
 .paso:last-child { border-bottom: 0; }
-.paso-n { font-variant-numeric: tabular-nums; color: var(--tinta-2); font-weight: 600; }
-.paso-nombre { font-weight: 600; }
+.paso-n { font: 700 15px/1 var(--mono); color: var(--tinta-2); }
+.paso-nombre { font-weight: 700; }
 .paso-meta { font-size: 14px; color: var(--tinta-2); }
-.paso-meta code { font-family: var(--mono); font-size: 13px; }
-.estado-paso { display: inline-flex; align-items: center; gap: 8px; font-size: 14px; white-space: nowrap; color: var(--tinta-2); }
-.paso[data-estado="corriendo"] { background: #f6f8f5; }
-.paso[data-estado="corriendo"] .estado-paso { color: var(--tinta); font-weight: 600; }
-.paso[data-estado="listo"] .estado-paso { color: var(--ok); }
-.paso[data-estado="error"] .estado-paso { color: var(--error); font-weight: 600; }
-.progreso { grid-column: 2 / -1; height: 4px; background: var(--sin-habla); overflow: hidden; }
-.progreso div { height: 100%; width: 100%; background: var(--tinta); transform-origin: left; transform: scaleX(0); transition: transform 900ms linear; }
-.consola-cab { display: flex; justify-content: space-between; align-items: baseline; gap: 16px; margin: 32px 0 8px; }
+.estado-paso { display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px 4px 8px; font-size: 14px; font-weight: 600; white-space: nowrap; color: var(--tinta-2); border: 1px solid var(--linea); border-radius: var(--radio); background: var(--papel); }
+.estado-paso .icono { width: 16px; height: 16px; }
+.paso[data-tono="ok"] .estado-paso { color: var(--ok); background: var(--ok-fondo); border-color: #bcdcc8; }
+.paso[data-tono="mal"] .estado-paso { color: var(--error); background: var(--error-fondo); border-color: #eec7bf; }
+.paso[data-tono="activo"] { background: var(--es-suave); }
+.paso[data-tono="activo"] .estado-paso { color: var(--es); background: var(--superficie); border-color: #a9cbe3; font-family: var(--mono); font-variant-numeric: tabular-nums; }
+.progreso { grid-column: 2 / -1; height: 4px; background: var(--superficie); overflow: hidden; }
+.progreso div { height: 100%; width: 100%; background: var(--es); transform-origin: left; transform: scaleX(0); transition: transform 900ms linear; }
+.consola-cab { display: flex; justify-content: space-between; align-items: baseline; gap: 16px; margin: 48px 0 12px; }
 .consola-cab h2 { margin: 0; }
-.consola { margin: 0; height: 360px; overflow: auto; padding: 16px; background: var(--pizarra); color: var(--tiza); border-radius: var(--radio); font: 13px/1.55 var(--mono); white-space: pre-wrap; overflow-wrap: anywhere; scrollbar-color: #4b5a54 transparent; }
-.consola .comando { color: #fff; font-weight: 600; }
+.consola { margin: 0; height: 380px; overflow: auto; padding: 16px 20px; background: var(--pizarra); color: var(--tiza); border-radius: var(--radio); font: 13px/1.6 var(--mono); white-space: pre-wrap; overflow-wrap: anywhere; scrollbar-color: #56707a transparent; }
+.consola::selection, .consola *::selection { background: #4f666c; color: #fff; }
+.consola .comando { color: #fff; font-weight: 700; }
 .consola .bien { color: #8fd3ad; }
 .consola .mal { color: #ffab9c; }
 .consola .apagado { color: var(--tiza-tenue); }
@@ -315,7 +332,8 @@ figcaption { font-size: 14px; color: var(--tinta-2); margin-top: 8px; }
   .analizando:not(:empty)::before { animation-duration: 2s; }
   .boton, .frases button { transition: background-color 150ms ease; }
   .boton:active:not(:disabled), .frases button:active { transform: none; }
-  .progreso div { transition: none; }
+  .progreso div, .riel-pasos li i { transition: none; }
+  .riel-pasos li[data-tono="activo"]::after { animation: none; }
 }
 </style>
 </head>
@@ -371,10 +389,14 @@ figcaption { font-size: 14px; color: var(--tinta-2); margin-top: 8px; }
           <button class="boton principal" id="correr-todo" type="button"><svg class="icono" aria-hidden="true"><use href="#i-correr"/></svg>Correr todo</button>
           <button class="boton peligro" id="cancelar" type="button" hidden>Cancelar</button>
         </div>
-        <p class="tenue num" id="total-estimado" style="margin:0"></p>
+        <p class="tenue" id="total-estimado" style="margin:0;font-variant-numeric:tabular-nums"></p>
       </div>
       <div id="avisos-entrenar"></div>
-      <ol class="pasos" id="pasos" style="margin-top:16px"></ol>
+      <figure class="riel-figura">
+        <ol class="riel-pasos" id="riel-pasos" aria-hidden="true"></ol>
+        <figcaption id="riel-nota"></figcaption>
+      </figure>
+      <ol class="pasos" id="pasos"></ol>
       <div class="consola-cab">
         <h2>Registro</h2>
         <span class="tenue" id="consola-paso"></span>
@@ -613,6 +635,10 @@ const pasosUI = new Map();  // id -> { estado, el, segundos }
 function dibujarPasos() {
   const total = estado.pasos.reduce((s, p) => s + p.segundos, 0);
   $('total-estimado').textContent = `Todo el pipeline: ≈ ${duracion(total)} en esta CPU`;
+  // Riel de pasos: el ancho de cada tramo es su duración medida (mínimo visible de 1,5 %).
+  const largo = estado.pasos.reduce((a, b) => (b.segundos > a.segundos ? b : a));
+  $('riel-nota').textContent = `Cada tramo mide la duración estimada de su paso. El más largo, «${largo.nombre}», es el ${Math.round(100 * largo.segundos / total)} % del total.`;
+  $('riel-pasos').innerHTML = estado.pasos.map((p, i) => `<li style="flex-grow:${Math.max(p.segundos / total, 0.015).toFixed(4)}" data-paso="${esc(p.id)}" title="${i + 1}. ${esc(p.nombre)} · ≈ ${duracion(p.segundos)}"><i></i><span>${i + 1}</span></li>`).join('');
   $('pasos').innerHTML = '';
   estado.pasos.forEach((p, i) => {
     const li = document.createElement('li');
@@ -644,6 +670,11 @@ function marcarPaso(id, nuevo, extra = {}) {
   }[nuevo];
   p.el.querySelector('.estado-paso').innerHTML = `<svg class="icono" aria-hidden="true"><use href="#${textos[0]}"/></svg>${textos[1]}`;
   p.el.querySelector('.progreso').hidden = nuevo !== 'corriendo';
+  const tono = { pendiente: salida ? 'ok' : 'neutro', espera: 'neutro', corriendo: 'activo', listo: 'ok', error: 'mal' }[nuevo];
+  p.el.dataset.tono = tono;
+  const tramo = $('riel-pasos').querySelector(`[data-paso="${id}"]`);
+  tramo.dataset.tono = tono;
+  tramo.style.setProperty('--avance', nuevo === 'corriendo' ? '0' : '1');
 }
 function bloquear(corriendo) {
   $('correr-todo').disabled = corriendo;
@@ -722,7 +753,9 @@ setInterval(() => {  // avance del paso en curso contra su estimación
   if (!corrida || !corrida.actual) return;
   const p = pasosUI.get(corrida.actual);
   const pasado = (Date.now() - corrida.inicioPaso) / 1000;
-  p.el.querySelector('.progreso div').style.transform = `scaleX(${Math.min(pasado / p.datos.segundos, 0.99)})`;
+  const avance = Math.min(pasado / p.datos.segundos, 0.99);
+  p.el.querySelector('.progreso div').style.transform = `scaleX(${avance})`;
+  $('riel-pasos').querySelector(`[data-paso="${corrida.actual}"]`).style.setProperty('--avance', avance.toFixed(3));
   p.el.querySelector('.estado-paso').innerHTML = `<svg class="icono" aria-hidden="true"><use href="#i-correr"/></svg>${duracion(pasado)} de ≈ ${duracion(p.datos.segundos)}`;
 }, 1000);
 
